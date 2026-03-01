@@ -1,0 +1,10 @@
+apiVersion: capacity.crossplane.io/v1alpha1
+kind: Disk
+metadata:
+  name: disk-{{.JobName}}-{{.Iteration}}-{{.Replica}}
+  namespace: crossplane-loadtest
+spec:
+  region: us-east-2
+  sizeGb: 50
+  diskType: gp3
+  enableSnapshots: true

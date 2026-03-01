@@ -1,0 +1,101 @@
+apiVersion: apiextensions.crossplane.io/v1
+kind: Composition
+metadata:
+  name: dns-zone-nop
+  labels:
+    crossplane.io/xrd: xdnszones.capacity.crossplane.io
+spec:
+  compositeTypeRef:
+    apiVersion: capacity.crossplane.io/v1alpha1
+    kind: XDNSZone
+  mode: Pipeline
+  pipeline:
+  - step: patch-and-transform
+    functionRef:
+      name: function-patch-and-transform
+    input:
+      apiVersion: pt.fn.crossplane.io/v1beta1
+      kind: Resources
+      resources:
+      - name: dns-zone
+        base:
+          apiVersion: nop.crossplane.io/v1alpha1
+          kind: NopResource
+          spec:
+            forProvider:
+              conditionAfter:
+              - conditionType: Ready
+                conditionStatus: 'True'
+                time: 3s
+              fields:
+                resourceType: dns-zone
+                description: Simulated DNS zone
+          metadata:
+            namespace: crossplane-loadtest
+        patches:
+        - type: FromCompositeFieldPath
+          fromFieldPath: spec.domainName
+          toFieldPath: spec.forProvider.fields.domainName
+        - type: FromCompositeFieldPath
+          fromFieldPath: spec.ttl
+          toFieldPath: spec.forProvider.fields.ttl
+      - name: soa-record
+        base:
+          apiVersion: nop.crossplane.io/v1alpha1
+          kind: NopResource
+          spec:
+            forProvider:
+              conditionAfter:
+              - conditionType: Ready
+                conditionStatus: 'True'
+                time: 2s
+              fields:
+                resourceType: dns-soa-record
+                description: Simulated SOA record
+          metadata:
+            namespace: crossplane-loadtest
+        patches:
+        - type: FromCompositeFieldPath
+          fromFieldPath: spec.domainName
+          toFieldPath: spec.forProvider.fields.domainName
+      - name: ns-records
+        base:
+          apiVersion: nop.crossplane.io/v1alpha1
+          kind: NopResource
+          spec:
+            forProvider:
+              conditionAfter:
+              - conditionType: Ready
+                conditionStatus: 'True'
+                time: 2s
+              fields:
+                resourceType: dns-ns-record
+                description: Simulated NS records
+          metadata:
+            namespace: crossplane-loadtest
+        patches:
+        - type: FromCompositeFieldPath
+          fromFieldPath: spec.domainName
+          toFieldPath: spec.forProvider.fields.domainName
+      - name: a-record
+        base:
+          apiVersion: nop.crossplane.io/v1alpha1
+          kind: NopResource
+          spec:
+            forProvider:
+              conditionAfter:
+              - conditionType: Ready
+                conditionStatus: 'True'
+                time: 5s
+              fields:
+                resourceType: dns-a-record
+                description: Simulated A record
+          metadata:
+            namespace: crossplane-loadtest
+        patches:
+        - type: FromCompositeFieldPath
+          fromFieldPath: spec.domainName
+          toFieldPath: spec.forProvider.fields.domainName
+  - step: auto-ready
+    functionRef:
+      name: function-auto-ready

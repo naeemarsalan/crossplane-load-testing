@@ -1,0 +1,199 @@
+{
+  "generated": "2026-03-01T21:37:18.070588Z",
+  "inputs": {
+    "current_objects": 65415,
+    "current_memory_bytes": 3587338240,
+    "current_memory_gib": 3.34,
+    "growth_rate_per_day": 377035.22,
+    "growth_rate_source": "deriv(crossplane:etcd_object_count:total[6h]) * 86400",
+    "cluster": {
+      "worker_count": 2,
+      "instance_type": "m5.xlarge",
+      "allocatable_cpu_per_node": 3.5,
+      "allocatable_mem_per_node_gib": 14.5,
+      "overhead_cpu_total": 0.5,
+      "overhead_mem_gib_total": 2.0,
+      "effective_cpu_per_node": 2.6,
+      "effective_mem_per_node_gib": 10.8,
+      "target_utilization": 0.8
+    }
+  },
+  "model_coefficients": {
+    "memory": {
+      "a": 2410377.201,
+      "b": 0.675841,
+      "r2": 0.9335,
+      "confidence": "high"
+    },
+    "cpu": {
+      "a": 0.00240972187,
+      "b": 0.589598,
+      "r2": 0.7608,
+      "confidence": "medium"
+    },
+    "etcd_p99": {
+      "a": 0.0008138691113,
+      "b": 0.54469,
+      "r2": 0.3278,
+      "confidence": "low"
+    },
+    "api_p99": {
+      "a": 0.007494035261,
+      "b": 0.542813,
+      "r2": 0.5184,
+      "confidence": "low"
+    },
+    "valid_range": [
+      6514,
+      48035
+    ]
+  },
+  "thresholds": {
+    "memory_critical_gib": 4.0,
+    "memory_hard_gib": 6.0,
+    "etcd_p99_critical_ms": 500,
+    "etcd_p99_hard_ms": 1000,
+    "api_p99_critical_s": 2.0,
+    "api_p99_hard_s": 5.0
+  },
+  "predictions_at_current": {
+    "memory_gib": 4.03,
+    "memory_bytes": 4332286844,
+    "cpu_cores": 1.664,
+    "etcd_p99_ms": 341.7,
+    "api_p99_ms": 3081.3,
+    "note": "Actual memory is 3.34 GiB vs predicted 4.03 GiB"
+  },
+  "forward_capacity": {
+    "nodes_required_now": 1,
+    "nodes_required_14d": 9,
+    "nodes_required_30d": 14,
+    "bottleneck": "api_latency",
+    "confidence": "low",
+    "headroom_pct": 50.0,
+    "projections": {
+      "now": {
+        "objects": 65415,
+        "memory_gib": 4.03,
+        "cpu_cores": 1.664
+      },
+      "14d": {
+        "objects": 5343908,
+        "memory_gib": 79.09,
+        "cpu_cores": 22.32
+      },
+      "30d": {
+        "objects": 11376472,
+        "memory_gib": 131.8,
+        "cpu_cores": 34.848
+      }
+    }
+  },
+  "reverse_capacity": {
+    "max_objects_supported": 29541,
+    "max_claims_supported": 3692,
+    "claims_multiplier": 8,
+    "bottleneck": "api_latency",
+    "confidence": "low",
+    "per_dimension_limits": {
+      "memory": 783061,
+      "cpu": 451608,
+      "etcd_latency": 131604,
+      "api_latency": 29505
+    },
+    "per_dimension_limits_python_binary_search": {
+      "memory": null,
+      "cpu": 451172,
+      "etcd_latency": 131836,
+      "api_latency": 29541
+    }
+  },
+  "grafana_comparison": {
+    "grafana_values": {
+      "nodes_required_now": 1,
+      "nodes_required_14d": 9,
+      "nodes_required_30d": 14,
+      "max_objects_supported": 29505,
+      "max_claims_supported": 3688,
+      "bottleneck_code": 4,
+      "bottleneck": "api_latency"
+    },
+    "python_values": {
+      "nodes_required_now": 1,
+      "nodes_required_14d": 9,
+      "nodes_required_30d": 14,
+      "max_objects_supported": 29541,
+      "max_claims_supported": 3692,
+      "bottleneck": "api_latency"
+    },
+    "comparison": [
+      {
+        "metric": "Workers Now",
+        "grafana": 1,
+        "python": 1,
+        "delta": 0,
+        "match": true
+      },
+      {
+        "metric": "Workers 14d",
+        "grafana": 9,
+        "python": 9,
+        "delta": 0,
+        "match": true
+      },
+      {
+        "metric": "Workers 30d",
+        "grafana": 14,
+        "python": 14,
+        "delta": 0,
+        "match": true
+      },
+      {
+        "metric": "Max Objects",
+        "grafana": 29505,
+        "python": 29541,
+        "delta": 36,
+        "match": true
+      },
+      {
+        "metric": "Max Claims",
+        "grafana": 3688,
+        "python": 3692,
+        "delta": 4,
+        "match": true
+      },
+      {
+        "metric": "Bottleneck",
+        "grafana": "api_latency",
+        "python": "api_latency",
+        "delta": 0,
+        "match": true
+      }
+    ],
+    "effective_capacity_comparison": {
+      "grafana_eff_mem_bytes": 11597316710,
+      "python_eff_mem_bytes": 11596411699,
+      "mem_delta_bytes": -905011,
+      "grafana_eff_cpu": 2.6,
+      "python_eff_cpu": 2.6
+    }
+  },
+  "analysis_notes": [
+    "Forward capacity (nodes required) matches exactly when both paths use the same Prometheus growth rate.",
+    "Prometheus growth rate is 377,035 obj/day \u2014 extremely high, likely from recent batch operations.",
+    "At this rate, projected objects in 14d: 5,343,908, in 30d: 11,376,472.",
+    "Reverse capacity differs by ~36 objects (0.1%) due to binary search vs closed-form formula.",
+    "Grafana uses pre-computed constant: exp(ln(2.0 / 7.49e-3) / 0.5428) = 29,505.",
+    "Python uses binary search over (0, 500,000) range, converging to 29,541.",
+    "Both paths share identical model coefficients, effective per-node capacity, and bottleneck dimension.",
+    "Memory binary search returns None because predicted memory at 500k objects < available memory (21.6 GiB total).",
+    "Analytical memory limit is 783,061 objects \u2014 well beyond the 500k search range default."
+  ],
+  "test_results": {
+    "test_file": "analysis/test_capacity_calculator.py",
+    "total": 29,
+    "passed": 29,
+    "failed": 0,
+    "status": "ALL PASSED"
+  }
+}

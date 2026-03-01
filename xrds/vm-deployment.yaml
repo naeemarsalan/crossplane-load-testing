@@ -1,0 +1,44 @@
+apiVersion: apiextensions.crossplane.io/v1
+kind: CompositeResourceDefinition
+metadata:
+  name: xvmdeployments.capacity.crossplane.io
+spec:
+  group: capacity.crossplane.io
+  names:
+    kind: XVMDeployment
+    plural: xvmdeployments
+  claimNames:
+    kind: VMDeployment
+    plural: vmdeployments
+  versions:
+    - name: v1alpha1
+      served: true
+      referenceable: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          properties:
+            spec:
+              type: object
+              properties:
+                region:
+                  type: string
+                  default: us-east-2
+                instanceType:
+                  type: string
+                  default: m5.xlarge
+                diskSizeGb:
+                  type: integer
+                  default: 100
+                enablePublicIp:
+                  type: boolean
+                  default: true
+              required:
+                - region
+            status:
+              type: object
+              properties:
+                instanceId:
+                  type: string
+                publicIp:
+                  type: string

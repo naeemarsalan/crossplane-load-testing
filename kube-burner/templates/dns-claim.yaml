@@ -1,0 +1,9 @@
+apiVersion: capacity.crossplane.io/v1alpha1
+kind: DNSZone
+metadata:
+  name: dns-{{.JobName}}-{{.Iteration}}-{{.Replica}}
+  namespace: crossplane-loadtest
+spec:
+  domainName: zone-{{.JobName}}-{{.Iteration}}.loadtest.io
+  ttl: 300
+  recordCount: 4

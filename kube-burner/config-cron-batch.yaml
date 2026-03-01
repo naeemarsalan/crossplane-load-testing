@@ -1,0 +1,24 @@
+global:
+  gc: false
+  measurements:
+    - name: podLatency
+      thresholds:
+        - conditionType: Ready
+          metric: P99
+          threshold: 60000ms
+
+jobs:
+  - name: cron-batch-BATCH_NUM
+    jobType: create
+    jobIterations: 500
+    qps: 20
+    burst: 20
+    namespacedIterations: false
+    namespace: crossplane-loadtest
+    waitWhenFinished: true
+    maxWaitTimeout: 10m
+    verifyObjects: true
+    errorOnVerify: false
+    objects:
+      - objectTemplate: templates/vm-claim.yaml
+        replicas: 1

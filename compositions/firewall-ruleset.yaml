@@ -1,0 +1,120 @@
+apiVersion: apiextensions.crossplane.io/v1
+kind: Composition
+metadata:
+  name: firewall-ruleset-nop
+  labels:
+    crossplane.io/xrd: xfirewallrulesets.capacity.crossplane.io
+spec:
+  compositeTypeRef:
+    apiVersion: capacity.crossplane.io/v1alpha1
+    kind: XFirewallRuleSet
+  mode: Pipeline
+  pipeline:
+  - step: patch-and-transform
+    functionRef:
+      name: function-patch-and-transform
+    input:
+      apiVersion: pt.fn.crossplane.io/v1beta1
+      kind: Resources
+      resources:
+      - name: ingress-rule
+        base:
+          apiVersion: nop.crossplane.io/v1alpha1
+          kind: NopResource
+          spec:
+            forProvider:
+              conditionAfter:
+              - conditionType: Ready
+                conditionStatus: 'True'
+                time: 2s
+              fields:
+                resourceType: firewall-ingress
+                description: Simulated ingress firewall rule
+          metadata:
+            namespace: crossplane-loadtest
+        patches:
+        - type: FromCompositeFieldPath
+          fromFieldPath: spec.region
+          toFieldPath: spec.forProvider.fields.region
+        - type: FromCompositeFieldPath
+          fromFieldPath: spec.allowedPorts
+          toFieldPath: spec.forProvider.fields.allowedPorts
+      - name: egress-rule
+        base:
+          apiVersion: nop.crossplane.io/v1alpha1
+          kind: NopResource
+          spec:
+            forProvider:
+              conditionAfter:
+              - conditionType: Ready
+                conditionStatus: 'True'
+                time: 2s
+              fields:
+                resourceType: firewall-egress
+                description: Simulated egress firewall rule
+          metadata:
+            namespace: crossplane-loadtest
+        patches:
+        - type: FromCompositeFieldPath
+          fromFieldPath: spec.region
+          toFieldPath: spec.forProvider.fields.region
+      - name: network-policy
+        base:
+          apiVersion: nop.crossplane.io/v1alpha1
+          kind: NopResource
+          spec:
+            forProvider:
+              conditionAfter:
+              - conditionType: Ready
+                conditionStatus: 'True'
+                time: 3s
+              fields:
+                resourceType: network-policy
+                description: Simulated network policy
+          metadata:
+            namespace: crossplane-loadtest
+        patches:
+        - type: FromCompositeFieldPath
+          fromFieldPath: spec.vpcId
+          toFieldPath: spec.forProvider.fields.vpcId
+      - name: log-config
+        base:
+          apiVersion: nop.crossplane.io/v1alpha1
+          kind: NopResource
+          spec:
+            forProvider:
+              conditionAfter:
+              - conditionType: Ready
+                conditionStatus: 'True'
+                time: 2s
+              fields:
+                resourceType: firewall-log-config
+                description: Simulated firewall logging configuration
+          metadata:
+            namespace: crossplane-loadtest
+        patches:
+        - type: FromCompositeFieldPath
+          fromFieldPath: spec.enableLogging
+          toFieldPath: spec.forProvider.fields.enableLogging
+      - name: resource-tag
+        base:
+          apiVersion: nop.crossplane.io/v1alpha1
+          kind: NopResource
+          spec:
+            forProvider:
+              conditionAfter:
+              - conditionType: Ready
+                conditionStatus: 'True'
+                time: 2s
+              fields:
+                resourceType: resource-tag
+                description: Simulated resource tagging
+          metadata:
+            namespace: crossplane-loadtest
+        patches:
+        - type: FromCompositeFieldPath
+          fromFieldPath: spec.region
+          toFieldPath: spec.forProvider.fields.region
+  - step: auto-ready
+    functionRef:
+      name: function-auto-ready

@@ -1,0 +1,63 @@
+---
+# Validation test config for holdout data collection.
+# Shorter ramp: 3 jobs, ~4,000 claims → ~30k objects.
+# Run with 30s Prometheus scraping for 20-30 independent holdout points.
+global:
+  gc: false
+  measurements:
+    - name: podLatency
+      thresholds:
+        - conditionType: Ready
+          metric: P99
+          threshold: 60000ms
+
+jobs:
+  # --- Validation Job 1: 1,000 VM claims (8,000 etcd objects) ---
+  - name: val-ramp-1000
+    jobType: create
+    jobIterations: 1000
+    qps: 25
+    burst: 25
+    namespacedIterations: false
+    namespace: crossplane-loadtest
+    waitWhenFinished: true
+    maxWaitTimeout: 10m
+    verifyObjects: true
+    errorOnVerify: false
+    jobPause: 60s
+    objects:
+      - objectTemplate: templates/vm-claim.yaml
+        replicas: 1
+
+  # --- Validation Job 2: 1,500 VM + 500 Disk claims (14,000 etcd objects) ---
+  - name: val-ramp-2500
+    jobType: create
+    jobIterations: 1500
+    qps: 30
+    burst: 30
+    namespacedIterations: false
+    namespace: crossplane-loadtest
+    waitWhenFinished: true
+    maxWaitTimeout: 10m
+    verifyObjects: true
+    errorOnVerify: false
+    jobPause: 60s
+    objects:
+      - objectTemplate: templates/vm-claim.yaml
+        replicas: 1
+
+  # --- Validation Job 3: Mixed batch to ~4,000 total claims (~30k objects) ---
+  - name: val-ramp-4000
+    jobType: create
+    jobIterations: 1500
+    qps: 30
+    burst: 30
+    namespacedIterations: false
+    namespace: crossplane-loadtest
+    waitWhenFinished: true
+    maxWaitTimeout: 15m
+    verifyObjects: true
+    errorOnVerify: false
+    objects:
+      - objectTemplate: templates/vm-claim.yaml
+        replicas: 1

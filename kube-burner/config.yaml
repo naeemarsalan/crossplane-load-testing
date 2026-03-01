@@ -1,0 +1,162 @@
+---
+global:
+  gc: false
+  measurements:
+    - name: podLatency
+      thresholds:
+        - conditionType: Ready
+          metric: P99
+          threshold: 60000ms
+
+jobs:
+  # --- Job 1: Smoke test — 100 VM claims (800 etcd objects) ---
+  - name: crossplane-ramp-100
+    jobType: create
+    jobIterations: 100
+    qps: 20
+    burst: 20
+    namespacedIterations: false
+    namespace: crossplane-loadtest
+    waitWhenFinished: true
+    maxWaitTimeout: 5m
+    verifyObjects: true
+    errorOnVerify: false
+    jobPause: 30s
+    objects:
+      - objectTemplate: templates/vm-claim.yaml
+        replicas: 1
+
+  # --- Job 2: Ramp to 500 claims (4,000 etcd objects) ---
+  - name: crossplane-ramp-500
+    jobType: create
+    jobIterations: 400
+    qps: 20
+    burst: 20
+    namespacedIterations: false
+    namespace: crossplane-loadtest
+    waitWhenFinished: true
+    maxWaitTimeout: 10m
+    verifyObjects: true
+    errorOnVerify: false
+    jobPause: 60s
+    objects:
+      - objectTemplate: templates/vm-claim.yaml
+        replicas: 1
+
+  # --- Job 3: Ramp to 1,000 claims (8,000 etcd objects) ---
+  - name: crossplane-ramp-1000
+    jobType: create
+    jobIterations: 500
+    qps: 25
+    burst: 25
+    namespacedIterations: false
+    namespace: crossplane-loadtest
+    waitWhenFinished: true
+    maxWaitTimeout: 10m
+    verifyObjects: true
+    errorOnVerify: false
+    jobPause: 60s
+    objects:
+      - objectTemplate: templates/vm-claim.yaml
+        replicas: 1
+
+  # --- Job 4: Add Disk claims — 1,000 disks (4,000 etcd objects) ---
+  - name: crossplane-disks-1000
+    jobType: create
+    jobIterations: 1000
+    qps: 30
+    burst: 30
+    namespacedIterations: false
+    namespace: crossplane-loadtest
+    waitWhenFinished: true
+    maxWaitTimeout: 10m
+    verifyObjects: true
+    errorOnVerify: false
+    jobPause: 60s
+    objects:
+      - objectTemplate: templates/disk-claim.yaml
+        replicas: 1
+
+  # --- Job 5: Add DNS claims — 1,000 zones (6,000 etcd objects) ---
+  - name: crossplane-dns-1000
+    jobType: create
+    jobIterations: 1000
+    qps: 30
+    burst: 30
+    namespacedIterations: false
+    namespace: crossplane-loadtest
+    waitWhenFinished: true
+    maxWaitTimeout: 10m
+    verifyObjects: true
+    errorOnVerify: false
+    jobPause: 60s
+    objects:
+      - objectTemplate: templates/dns-claim.yaml
+        replicas: 1
+
+  # --- Job 6: Add Firewall claims — 1,000 rulesets (7,000 etcd objects) ---
+  - name: crossplane-firewall-1000
+    jobType: create
+    jobIterations: 1000
+    qps: 30
+    burst: 30
+    namespacedIterations: false
+    namespace: crossplane-loadtest
+    waitWhenFinished: true
+    maxWaitTimeout: 10m
+    verifyObjects: true
+    errorOnVerify: false
+    jobPause: 60s
+    objects:
+      - objectTemplate: templates/firewall-claim.yaml
+        replicas: 1
+
+  # --- Job 7: Large VM batch — 2,000 more VMs (16,000 etcd objects) ---
+  - name: crossplane-vm-large-2000
+    jobType: create
+    jobIterations: 2000
+    qps: 30
+    burst: 30
+    namespacedIterations: false
+    namespace: crossplane-loadtest
+    waitWhenFinished: true
+    maxWaitTimeout: 15m
+    verifyObjects: true
+    errorOnVerify: false
+    jobPause: 120s
+    objects:
+      - objectTemplate: templates/vm-claim.yaml
+        replicas: 1
+
+  # --- Job 8: Mixed batch — push toward 100k ---
+  - name: crossplane-mixed-5000
+    jobType: create
+    jobIterations: 5000
+    qps: 40
+    burst: 40
+    namespacedIterations: false
+    namespace: crossplane-loadtest
+    waitWhenFinished: true
+    maxWaitTimeout: 30m
+    verifyObjects: true
+    errorOnVerify: false
+    jobPause: 120s
+    objects:
+      - objectTemplate: templates/vm-claim.yaml
+        replicas: 1
+
+  # --- Job 9: Final push — remaining claims to reach ~12,500 total ---
+  - name: crossplane-final-push
+    jobType: create
+    jobIterations: 2000
+    qps: 40
+    burst: 40
+    namespacedIterations: false
+    namespace: crossplane-loadtest
+    waitWhenFinished: true
+    maxWaitTimeout: 30m
+    verifyObjects: true
+    errorOnVerify: false
+    objects:
+      - objectTemplate: templates/vm-claim.yaml
+        replicas: 1

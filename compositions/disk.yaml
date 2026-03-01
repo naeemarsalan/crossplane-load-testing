@@ -1,0 +1,66 @@
+apiVersion: apiextensions.crossplane.io/v1
+kind: Composition
+metadata:
+  name: disk-nop
+  labels:
+    crossplane.io/xrd: xdisks.capacity.crossplane.io
+spec:
+  compositeTypeRef:
+    apiVersion: capacity.crossplane.io/v1alpha1
+    kind: XDisk
+  mode: Pipeline
+  pipeline:
+  - step: patch-and-transform
+    functionRef:
+      name: function-patch-and-transform
+    input:
+      apiVersion: pt.fn.crossplane.io/v1beta1
+      kind: Resources
+      resources:
+      - name: disk
+        base:
+          apiVersion: nop.crossplane.io/v1alpha1
+          kind: NopResource
+          spec:
+            forProvider:
+              conditionAfter:
+              - conditionType: Ready
+                conditionStatus: 'True'
+                time: 2s
+              fields:
+                resourceType: managed-disk
+                description: Simulated managed disk
+          metadata:
+            namespace: crossplane-loadtest
+        patches:
+        - type: FromCompositeFieldPath
+          fromFieldPath: spec.region
+          toFieldPath: spec.forProvider.fields.region
+        - type: FromCompositeFieldPath
+          fromFieldPath: spec.sizeGb
+          toFieldPath: spec.forProvider.fields.sizeGb
+        - type: FromCompositeFieldPath
+          fromFieldPath: spec.diskType
+          toFieldPath: spec.forProvider.fields.diskType
+      - name: snapshot-policy
+        base:
+          apiVersion: nop.crossplane.io/v1alpha1
+          kind: NopResource
+          spec:
+            forProvider:
+              conditionAfter:
+              - conditionType: Ready
+                conditionStatus: 'True'
+                time: 2s
+              fields:
+                resourceType: snapshot-policy
+                description: Simulated disk snapshot policy
+          metadata:
+            namespace: crossplane-loadtest
+        patches:
+        - type: FromCompositeFieldPath
+          fromFieldPath: spec.enableSnapshots
+          toFieldPath: spec.forProvider.fields.enableSnapshots
+  - step: auto-ready
+    functionRef:
+      name: function-auto-ready

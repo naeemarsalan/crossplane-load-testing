@@ -1,0 +1,67 @@
+# External Prometheus configuration (172.16.2.252:9090)
+#
+# This Prometheus instance runs outside the ROSA cluster and pulls metrics
+# via federation from ROSA's public /federate endpoint. Recording rules and
+# alert rules are evaluated here, and Grafana queries this instance.
+#
+# Architecture:
+#   ROSA cluster --> [public federate route] --> External Prometheus --> Grafana
+#
+# The federation scrape replaces the previous remote-write approach, which
+# failed because ROSA (AWS VPC) cannot reach the external host directly.
+#
+# IMPORTANT: The bearer token expires and must be refreshed periodically.
+#   oc whoami -t   # or use a long-lived service account token
+#
+global:
+  scrape_interval: 15s
+  scrape_timeout: 10s
+  evaluation_interval: 15s
+rule_files:
+  - "crossplane-rules.yml"
+alerting:
+  alertmanagers:
+  - static_configs:
+    - targets: []
+    scheme: http
+    timeout: 10s
+    api_version: v2
+scrape_configs:
+- job_name: prometheus
+  honor_timestamps: true
+  scrape_interval: 15s
+  scrape_timeout: 10s
+  metrics_path: /metrics
+  scheme: http
+  static_configs:
+  - targets:
+    - localhost:9090
+
+# Pull metrics from ROSA cluster via Thanos federate endpoint
+- job_name: rosa-federation
+  honor_labels: true
+  scrape_interval: 30s
+  scrape_timeout: 25s
+  metrics_path: /federate
+  scheme: https
+  tls_config:
+    insecure_skip_verify: true
+  authorization:
+    type: Bearer
+    credentials: '<ROSA_BEARER_TOKEN>'
+  params:
+    match[]:
+      - '{__name__="apiserver_storage_objects"}'
+      - '{__name__="etcd_request_duration_seconds_bucket"}'
+      - '{__name__="apiserver_request_duration_seconds_bucket",verb!~"WATCH|CONNECT"}'
+      - '{__name__="apiserver_request_duration_seconds_count",verb!~"WATCH|CONNECT"}'
+      - '{__name__="container_memory_working_set_bytes",namespace="crossplane-system"}'
+      - '{__name__="container_cpu_usage_seconds_total",namespace="crossplane-system"}'
+      - '{__name__="apiserver_current_inflight_requests"}'
+      - '{__name__="apiserver_request_total"}'
+  static_configs:
+  - targets:
+    - prometheus-k8s-federate-openshift-monitoring.apps.rosa.rosa-txwwq.zs4d.p3.openshiftapps.com
+  metric_relabel_configs:
+  - target_label: source_cluster
+    replacement: rosa

@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cluster-monitoring-config
+  namespace: openshift-monitoring
+data:
+  config.yaml: |
+    enableUserWorkload: true
+    prometheusK8s:
+      remoteWrite:
+        - url: "https://prom.arsalan.io/api/v1/write"
+          writeRelabelConfigs:
+            - sourceLabels: [__name__, namespace]
+              regex: "container_memory_working_set_bytes;crossplane-system|container_cpu_usage_seconds_total;crossplane-system"
+              action: keep

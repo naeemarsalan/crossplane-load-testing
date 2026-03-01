@@ -1,0 +1,42 @@
+apiVersion: apiextensions.crossplane.io/v1
+kind: CompositeResourceDefinition
+metadata:
+  name: xfirewallrulesets.capacity.crossplane.io
+spec:
+  group: capacity.crossplane.io
+  names:
+    kind: XFirewallRuleSet
+    plural: xfirewallrulesets
+  claimNames:
+    kind: FirewallRuleSet
+    plural: firewallrulesets
+  versions:
+    - name: v1alpha1
+      served: true
+      referenceable: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          properties:
+            spec:
+              type: object
+              properties:
+                region:
+                  type: string
+                  default: us-east-2
+                vpcId:
+                  type: string
+                  default: vpc-loadtest
+                allowedPorts:
+                  type: string
+                  default: "80,443,8080"
+                enableLogging:
+                  type: boolean
+                  default: true
+              required:
+                - region
+            status:
+              type: object
+              properties:
+                rulesetId:
+                  type: string

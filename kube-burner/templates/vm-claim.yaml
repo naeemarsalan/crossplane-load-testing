@@ -1,0 +1,10 @@
+apiVersion: capacity.crossplane.io/v1alpha1
+kind: VMDeployment
+metadata:
+  name: vm-{{.JobName}}-{{.Iteration}}-{{.Replica}}
+  namespace: crossplane-loadtest
+spec:
+  region: us-east-2
+  instanceType: m5.xlarge
+  diskSizeGb: 100
+  enablePublicIp: true

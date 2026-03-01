@@ -1,0 +1,41 @@
+apiVersion: apiextensions.crossplane.io/v1
+kind: CompositeResourceDefinition
+metadata:
+  name: xdnszones.capacity.crossplane.io
+spec:
+  group: capacity.crossplane.io
+  names:
+    kind: XDNSZone
+    plural: xdnszones
+  claimNames:
+    kind: DNSZone
+    plural: dnszones
+  versions:
+    - name: v1alpha1
+      served: true
+      referenceable: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          properties:
+            spec:
+              type: object
+              properties:
+                domainName:
+                  type: string
+                  default: example.loadtest.io
+                ttl:
+                  type: integer
+                  default: 300
+                recordCount:
+                  type: integer
+                  default: 4
+              required:
+                - domainName
+            status:
+              type: object
+              properties:
+                zoneId:
+                  type: string
+                nameservers:
+                  type: string

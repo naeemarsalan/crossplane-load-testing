@@ -1,0 +1,4 @@
+apiVersion: nop.crossplane.io/v1alpha1
+kind: ProviderConfig
+metadata:
+  name: default

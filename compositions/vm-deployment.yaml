@@ -1,0 +1,139 @@
+apiVersion: apiextensions.crossplane.io/v1
+kind: Composition
+metadata:
+  name: vm-deployment-nop
+  labels:
+    crossplane.io/xrd: xvmdeployments.capacity.crossplane.io
+spec:
+  compositeTypeRef:
+    apiVersion: capacity.crossplane.io/v1alpha1
+    kind: XVMDeployment
+  mode: Pipeline
+  pipeline:
+  - step: patch-and-transform
+    functionRef:
+      name: function-patch-and-transform
+    input:
+      apiVersion: pt.fn.crossplane.io/v1beta1
+      kind: Resources
+      resources:
+      - name: vm-instance
+        base:
+          apiVersion: nop.crossplane.io/v1alpha1
+          kind: NopResource
+          spec:
+            forProvider:
+              conditionAfter:
+              - conditionType: Ready
+                conditionStatus: 'True'
+                time: 3s
+              fields:
+                resourceType: vm-instance
+                description: Simulated VM instance
+          metadata:
+            namespace: crossplane-loadtest
+        patches:
+        - type: FromCompositeFieldPath
+          fromFieldPath: spec.region
+          toFieldPath: spec.forProvider.fields.region
+        - type: FromCompositeFieldPath
+          fromFieldPath: spec.instanceType
+          toFieldPath: spec.forProvider.fields.instanceType
+      - name: boot-disk
+        base:
+          apiVersion: nop.crossplane.io/v1alpha1
+          kind: NopResource
+          spec:
+            forProvider:
+              conditionAfter:
+              - conditionType: Ready
+                conditionStatus: 'True'
+                time: 2s
+              fields:
+                resourceType: boot-disk
+                description: Simulated boot disk
+          metadata:
+            namespace: crossplane-loadtest
+        patches:
+        - type: FromCompositeFieldPath
+          fromFieldPath: spec.diskSizeGb
+          toFieldPath: spec.forProvider.fields.diskSizeGb
+      - name: network-interface
+        base:
+          apiVersion: nop.crossplane.io/v1alpha1
+          kind: NopResource
+          spec:
+            forProvider:
+              conditionAfter:
+              - conditionType: Ready
+                conditionStatus: 'True'
+                time: 2s
+              fields:
+                resourceType: network-interface
+                description: Simulated network interface
+          metadata:
+            namespace: crossplane-loadtest
+        patches:
+        - type: FromCompositeFieldPath
+          fromFieldPath: spec.region
+          toFieldPath: spec.forProvider.fields.region
+      - name: public-ip
+        base:
+          apiVersion: nop.crossplane.io/v1alpha1
+          kind: NopResource
+          spec:
+            forProvider:
+              conditionAfter:
+              - conditionType: Ready
+                conditionStatus: 'True'
+                time: 2s
+              fields:
+                resourceType: public-ip
+                description: Simulated public IP address
+          metadata:
+            namespace: crossplane-loadtest
+        patches:
+        - type: FromCompositeFieldPath
+          fromFieldPath: spec.enablePublicIp
+          toFieldPath: spec.forProvider.fields.enablePublicIp
+      - name: firewall-rule
+        base:
+          apiVersion: nop.crossplane.io/v1alpha1
+          kind: NopResource
+          spec:
+            forProvider:
+              conditionAfter:
+              - conditionType: Ready
+                conditionStatus: 'True'
+                time: 3s
+              fields:
+                resourceType: firewall-rule
+                description: Simulated firewall rule for VM
+          metadata:
+            namespace: crossplane-loadtest
+        patches:
+        - type: FromCompositeFieldPath
+          fromFieldPath: spec.region
+          toFieldPath: spec.forProvider.fields.region
+      - name: dns-record
+        base:
+          apiVersion: nop.crossplane.io/v1alpha1
+          kind: NopResource
+          spec:
+            forProvider:
+              conditionAfter:
+              - conditionType: Ready
+                conditionStatus: 'True'
+                time: 2s
+              fields:
+                resourceType: dns-a-record
+                description: Simulated DNS A record for VM
+          metadata:
+            namespace: crossplane-loadtest
+        patches:
+        - type: FromCompositeFieldPath
+          fromFieldPath: spec.region
+          toFieldPath: spec.forProvider.fields.region
+  - step: auto-ready
+    functionRef:
+      name: function-auto-ready

@@ -1,0 +1,10 @@
+apiVersion: capacity.crossplane.io/v1alpha1
+kind: FirewallRuleSet
+metadata:
+  name: fw-{{.JobName}}-{{.Iteration}}-{{.Replica}}
+  namespace: crossplane-loadtest
+spec:
+  region: us-east-2
+  vpcId: vpc-loadtest
+  allowedPorts: "80,443,8080"
+  enableLogging: true

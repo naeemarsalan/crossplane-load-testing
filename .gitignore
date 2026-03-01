@@ -1,0 +1,29 @@
+# Credentials and secrets
+.mcp.json
+scripts/cron-env.sh
+kube-burner/metrics-endpoint.yaml
+
+# Generated logs
+*.log
+kube-burner/*.log
+
+# Generated data (ephemeral)
+results/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+.venv/
+venv/
+
+# State files
+scripts/cron-state.json
+
+# OS / editor
+.DS_Store
+*.swp
+*.swo
+.vscode/
+.idea/

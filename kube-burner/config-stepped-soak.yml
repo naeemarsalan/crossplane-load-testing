@@ -1,0 +1,156 @@
+---
+# Stepped Soak Test — Crossplane Capacity Planning
+#
+# Unlike the continuous ramp test (config.yaml), this config creates objects
+# in discrete batches with 5-minute soak pauses between steps. During each
+# soak window the system reaches steady state, giving clean data for model
+# fitting (burst noise removed).
+#
+# Steps (cumulative etcd objects, assumes 8 objects per VMDeployment claim):
+#   Step 0: baseline  (~6,500 objects)   — existing cluster objects
+#   Step 1: +500 VMs  (~10,500 objects)
+#   Step 2: +1,250 VMs (~20,500 objects)
+#   Step 3: +1,250 VMs (~30,500 objects)
+#   Step 4: +1,250 VMs (~40,500 objects)
+#   Step 5: +1,250 VMs (~50,500 objects)
+#   Step 6: +3,125 VMs (~75,500 objects)
+#   Step 7: +3,125 VMs (~100,500 objects)
+#
+# Total: ~12,500 new claims = ~100k new etcd objects
+# Duration: ~60-90 minutes (8 ramps + 8 x 5min soaks)
+#
+# Usage:
+#   kube-burner ocp init -c config-stepped-soak.yml \
+#     --metrics-profile metrics-profile.yml --log-level info
+#
+# After the test, run collect-soak-metrics.sh to extract steady-state
+# averages from each soak window.
+
+global:
+  gc: false
+  measurements:
+    - name: podLatency
+      thresholds:
+        - conditionType: Ready
+          metric: P99
+          threshold: 120000ms
+
+jobs:
+  # --- Step 1: Ramp to ~10k objects ---
+  - name: soak-step-1-ramp-10k
+    jobType: create
+    jobIterations: 500
+    qps: 25
+    burst: 25
+    namespacedIterations: false
+    namespace: crossplane-loadtest
+    waitWhenFinished: true
+    maxWaitTimeout: 10m
+    verifyObjects: true
+    errorOnVerify: false
+    jobPause: 300s    # 5-minute soak after this step
+    objects:
+      - objectTemplate: templates/vm-claim.yaml
+        replicas: 1
+
+  # --- Step 2: Ramp to ~20k objects ---
+  - name: soak-step-2-ramp-20k
+    jobType: create
+    jobIterations: 1250
+    qps: 30
+    burst: 30
+    namespacedIterations: false
+    namespace: crossplane-loadtest
+    waitWhenFinished: true
+    maxWaitTimeout: 15m
+    verifyObjects: true
+    errorOnVerify: false
+    jobPause: 300s
+    objects:
+      - objectTemplate: templates/vm-claim.yaml
+        replicas: 1
+
+  # --- Step 3: Ramp to ~30k objects ---
+  - name: soak-step-3-ramp-30k
+    jobType: create
+    jobIterations: 1250
+    qps: 30
+    burst: 30
+    namespacedIterations: false
+    namespace: crossplane-loadtest
+    waitWhenFinished: true
+    maxWaitTimeout: 15m
+    verifyObjects: true
+    errorOnVerify: false
+    jobPause: 300s
+    objects:
+      - objectTemplate: templates/vm-claim.yaml
+        replicas: 1
+
+  # --- Step 4: Ramp to ~40k objects ---
+  - name: soak-step-4-ramp-40k
+    jobType: create
+    jobIterations: 1250
+    qps: 30
+    burst: 30
+    namespacedIterations: false
+    namespace: crossplane-loadtest
+    waitWhenFinished: true
+    maxWaitTimeout: 15m
+    verifyObjects: true
+    errorOnVerify: false
+    jobPause: 300s
+    objects:
+      - objectTemplate: templates/vm-claim.yaml
+        replicas: 1
+
+  # --- Step 5: Ramp to ~50k objects ---
+  - name: soak-step-5-ramp-50k
+    jobType: create
+    jobIterations: 1250
+    qps: 30
+    burst: 30
+    namespacedIterations: false
+    namespace: crossplane-loadtest
+    waitWhenFinished: true
+    maxWaitTimeout: 15m
+    verifyObjects: true
+    errorOnVerify: false
+    jobPause: 300s
+    objects:
+      - objectTemplate: templates/vm-claim.yaml
+        replicas: 1
+
+  # --- Step 6: Ramp to ~75k objects ---
+  - name: soak-step-6-ramp-75k
+    jobType: create
+    jobIterations: 3125
+    qps: 35
+    burst: 35
+    namespacedIterations: false
+    namespace: crossplane-loadtest
+    waitWhenFinished: true
+    maxWaitTimeout: 20m
+    verifyObjects: true
+    errorOnVerify: false
+    jobPause: 300s
+    objects:
+      - objectTemplate: templates/vm-claim.yaml
+        replicas: 1
+
+  # --- Step 7: Ramp to ~100k objects ---
+  - name: soak-step-7-ramp-100k
+    jobType: create
+    jobIterations: 3125
+    qps: 35
+    burst: 35
+    namespacedIterations: false
+    namespace: crossplane-loadtest
+    waitWhenFinished: true
+    maxWaitTimeout: 20m
+    verifyObjects: true
+    errorOnVerify: false
+    jobPause: 300s
+    objects:
+      - objectTemplate: templates/vm-claim.yaml
+        replicas: 1

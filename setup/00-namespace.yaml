@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: crossplane-loadtest
+  labels:
+    app.kubernetes.io/part-of: crossplane-capacity-test
+    purpose: load-testing

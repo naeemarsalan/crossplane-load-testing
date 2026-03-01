@@ -1,0 +1,53 @@
+---
+# Alert thresholds checked during kube-burner load test
+# These will cause kube-burner to flag warnings/errors in its output
+
+# etcd request latency too high — etcd is under stress
+- expr: histogram_quantile(0.99, sum(rate(etcd_request_duration_seconds_bucket[5m])) by (le)) > 0.1
+  description: "etcd request P99 latency exceeds 100ms"
+  severity: warning
+
+- expr: histogram_quantile(0.99, sum(rate(etcd_request_duration_seconds_bucket[5m])) by (le)) > 0.5
+  description: "etcd request P99 latency exceeds 500ms — etcd severely degraded"
+  severity: critical
+
+# API server latency too high
+- expr: histogram_quantile(0.99, sum(rate(apiserver_request_duration_seconds_bucket{verb!~"WATCH|CONNECT"}[5m])) by (le)) > 1.0
+  description: "API server request P99 latency exceeds 1s"
+  severity: warning
+
+- expr: histogram_quantile(0.99, sum(rate(apiserver_request_duration_seconds_bucket{verb!~"WATCH|CONNECT"}[5m])) by (le)) > 5.0
+  description: "API server request P99 latency exceeds 5s — API server severely degraded"
+  severity: critical
+
+# API server error rate
+- expr: sum(rate(apiserver_request_total{code=~"5.."}[5m])) > 10
+  description: "API server returning >10 5xx errors/sec"
+  severity: warning
+
+# Crossplane controller OOM risk
+- expr: sum(container_memory_working_set_bytes{namespace="crossplane-system", container="crossplane"}) > 1.5e9
+  description: "Crossplane controller memory exceeds 1.5GB — OOM risk"
+  severity: warning
+
+- expr: sum(container_memory_working_set_bytes{namespace="crossplane-system", container="crossplane"}) > 3e9
+  description: "Crossplane controller memory exceeds 3GB — imminent OOM"
+  severity: critical
+
+# Too many inflight requests
+- expr: sum(apiserver_current_inflight_requests) > 400
+  description: "API server has >400 inflight requests — throttling likely"
+  severity: warning
+
+# Object count milestones (informational)
+- expr: sum(apiserver_storage_objects) > 30000
+  description: "Object count exceeded 30,000"
+  severity: info
+
+- expr: sum(apiserver_storage_objects) > 80000
+  description: "Object count exceeded 80,000"
+  severity: warning
+
+- expr: sum(apiserver_storage_objects) > 100000
+  description: "Object count exceeded 100,000"
+  severity: warning

@@ -1,0 +1,1 @@
+[{"timestamp":"2026-02-28T23:41:31.428Z","value":52065,"uuid":"1ab1bfcc-8d31-45ea-956c-0bbb02680d9c","query":"sum(apiserver_storage_objects)","metricName":"etcdObjectCountTotal","jobName":"crossplane-final-push","metadata":null}]

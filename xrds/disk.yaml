@@ -1,0 +1,42 @@
+apiVersion: apiextensions.crossplane.io/v1
+kind: CompositeResourceDefinition
+metadata:
+  name: xdisks.capacity.crossplane.io
+spec:
+  group: capacity.crossplane.io
+  names:
+    kind: XDisk
+    plural: xdisks
+  claimNames:
+    kind: Disk
+    plural: disks
+  versions:
+    - name: v1alpha1
+      served: true
+      referenceable: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          properties:
+            spec:
+              type: object
+              properties:
+                region:
+                  type: string
+                  default: us-east-2
+                sizeGb:
+                  type: integer
+                  default: 50
+                diskType:
+                  type: string
+                  default: gp3
+                enableSnapshots:
+                  type: boolean
+                  default: true
+              required:
+                - region
+            status:
+              type: object
+              properties:
+                diskId:
+                  type: string

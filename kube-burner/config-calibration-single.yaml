@@ -1,0 +1,31 @@
+global:
+  gc: false
+  measurements:
+    - name: podLatency
+      thresholds:
+        - conditionType: Ready
+          metric: P99
+          threshold: 60000ms
+
+# Calibration config for per-CR isolation runs.
+# Runs one CR type at a time to measure marginal cost.
+# Variables substituted by calibration script:
+#   BATCH_NUM  — calibration batch identifier
+#   CR_TYPE    — one of: vm, disk, dns, firewall
+#   ITERATIONS — number of claims to create (500, 1000, 2000)
+
+jobs:
+  - name: calibration-CR_TYPE-BATCH_NUM
+    jobType: create
+    jobIterations: ITERATIONS
+    qps: 20
+    burst: 20
+    namespacedIterations: false
+    namespace: crossplane-calibration
+    waitWhenFinished: true
+    maxWaitTimeout: 10m
+    verifyObjects: true
+    errorOnVerify: false
+    objects:
+      - objectTemplate: templates/CR_TYPE-claim.yaml
+        replicas: 1
