@@ -1,5 +1,6 @@
 # Credentials and secrets
 .mcp.json
+scripts/self-managed-env.sh
 scripts/cron-env.sh
 kube-burner/metrics-endpoint.yaml
 
@@ -17,9 +18,6 @@ __pycache__/
 .pytest_cache/
 .venv/
 venv/
-
-# State files
-scripts/cron-state.json
 
 # OS / editor
 .DS_Store

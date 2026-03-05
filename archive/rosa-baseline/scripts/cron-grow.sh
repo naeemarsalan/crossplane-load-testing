@@ -17,8 +17,8 @@ STATE_FILE="$SCRIPT_DIR/cron-state.json"
 TRACKING_LOG="$PROJECT_DIR/results/cron-log.json"
 DISABLE_MARKER="$SCRIPT_DIR/.cron-disabled"
 KUBE_BURNER_CONFIG="$PROJECT_DIR/kube-burner/config-cron-batch.yaml"
-PROM_URL="https://prom.arsalan.io"
-GRAFANA_URL="http://172.16.2.252:3000"
+PROM_URL="https://prometheus.example.com"
+GRAFANA_URL="http://grafana.example.com:3000"
 GRAFANA_DASHBOARD_UID="crossplane-capacity"
 
 # Milestone thresholds for Grafana annotations
@@ -222,7 +222,7 @@ run_spot_checks() {
     python3 << 'PYEOF'
 import json, sys, urllib.request, urllib.parse
 
-PROM_URL = "https://prom.arsalan.io"
+PROM_URL = "https://prometheus.example.com"
 
 def query(expr):
     """Query Prometheus, return (value_or_None, result_count)."""
@@ -336,7 +336,7 @@ log "Saving metrics snapshot..."
 python3 << PYEOF > "$BATCH_DIR/metrics.json" 2>/dev/null || echo '{}' > "$BATCH_DIR/metrics.json"
 import json, urllib.request, urllib.parse
 
-PROM_URL = "https://prom.arsalan.io"
+PROM_URL = "https://prometheus.example.com"
 
 def query(expr):
     try:
@@ -406,7 +406,7 @@ log "Appending to tracking log..."
 ALERTS_FIRING=$(python3 -c "
 import json, urllib.request
 try:
-    url = 'https://prom.arsalan.io/api/v1/alerts'
+    url = 'https://prometheus.example.com/api/v1/alerts'
     with urllib.request.urlopen(url, timeout=10) as resp:
         data = json.loads(resp.read())
         alerts = data.get('data', {}).get('alerts', [])

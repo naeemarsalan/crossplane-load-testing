@@ -21,10 +21,10 @@ spec:
         - record: crossplane:object_growth_rate:per_day
           expr: deriv(crossplane:etcd_object_count:total[6h]) * 86400
 
-        # Days until 30k object threshold
-        - record: crossplane:days_until_object_limit:30k
+        # Days until 50k object threshold
+        - record: crossplane:days_until_object_limit:50k
           expr: |
-            (30000 - crossplane:etcd_object_count:total)
+            (50000 - crossplane:etcd_object_count:total)
             /
             clamp_min(crossplane:object_growth_rate:per_day, 1)
 
@@ -75,7 +75,7 @@ spec:
     # documented in monitoring/capacity-model-scorecard.md.
     #
     # Metadata labels: model, fit_date, r2, valid_range
-    # valid_range = "6514-48035" means model was fitted on that object range
+    # valid_range = "18047-115856" means model was fitted on that object range
     #
     # Predictions beyond valid_range are extrapolations — treat with caution.
     # =====================================================================
@@ -84,46 +84,46 @@ spec:
       rules:
         # --- Controller Memory Prediction (bytes) ---
         # Model: power_law  y = a * x^b
-        # Fitted coefficients from analysis/capacity_model.py (2026-02-28)
-        # a = 2.410377201e+06, b = 0.675841
+        # Fitted coefficients from overnight test on crossplane1 (2026-03-03)
+        # a = 2.739965e+07, b = 0.475558
         - record: crossplane:predicted_memory_bytes
           labels:
             model: "power_law"
-            fit_date: "2026-02-28"
-            r2: "0.9335"
-            valid_range: "6514-48035"
+            fit_date: "2026-03-03"
+            r2: "0.9389"
+            valid_range: "18047-115856"
           expr: |
-            2.410377201e+06 * (crossplane:etcd_object_count:total ^ 0.675841)
+            2.739965e+07 * (crossplane:etcd_object_count:total ^ 0.475558)
 
         # --- Controller CPU Prediction (cores) ---
         - record: crossplane:predicted_cpu_cores
           labels:
             model: "power_law"
-            fit_date: "2026-02-28"
-            r2: "0.7608"
-            valid_range: "6514-48035"
+            fit_date: "2026-03-03"
+            r2: "0.9425"
+            valid_range: "18047-115856"
           expr: |
-            2.409721870e-03 * (crossplane:etcd_object_count:total ^ 0.589598)
+            3.290412e-03 * (crossplane:etcd_object_count:total ^ 0.594721)
 
         # --- etcd Request Latency P99 Prediction (seconds) ---
         - record: crossplane:predicted_etcd_latency_p99_seconds
           labels:
             model: "power_law"
-            fit_date: "2026-02-28"
-            r2: "0.3278"
-            valid_range: "6514-48035"
+            fit_date: "2026-03-03"
+            r2: "0.5872"
+            valid_range: "18047-115856"
           expr: |
-            8.138691113e-04 * (crossplane:etcd_object_count:total ^ 0.544690)
+            6.570291e-01 * (crossplane:etcd_object_count:total ^ -0.201361)
 
         # --- API Server Latency P99 Prediction (seconds) ---
         - record: crossplane:predicted_apiserver_latency_p99_seconds
           labels:
             model: "power_law"
-            fit_date: "2026-02-28"
-            r2: "0.5184"
-            valid_range: "6514-48035"
+            fit_date: "2026-03-03"
+            r2: "0.4779"
+            valid_range: "18047-115856"
           expr: |
-            7.494035261e-03 * (crossplane:etcd_object_count:total ^ 0.542813)
+            1.032016e+00 * (crossplane:etcd_object_count:total ^ -0.004637)
 
         # --- Fixed-Point Predictions for Dashboard Stat Panels ---
         # These use constant expressions for instant-vector compatibility
@@ -133,56 +133,56 @@ spec:
           labels:
             model: "power_law"
             reference_objects: "50000"
-          expr: vector(2.410377201e+06 * (50000 ^ 0.675841))
+          expr: vector(2.739965e+07 * (50000 ^ 0.475558))
 
         # Predicted memory at 100k objects (bytes)
         - record: crossplane:predicted_memory_bytes:at_100k
           labels:
             model: "power_law"
             reference_objects: "100000"
-          expr: vector(2.410377201e+06 * (100000 ^ 0.675841))
+          expr: vector(2.739965e+07 * (100000 ^ 0.475558))
 
         # Predicted etcd latency P99 at 50k objects (seconds)
         - record: crossplane:predicted_etcd_latency_p99_seconds:at_50k
           labels:
             model: "power_law"
             reference_objects: "50000"
-          expr: vector(8.138691113e-04 * (50000 ^ 0.544690))
+          expr: vector(6.570291e-01 * (50000 ^ -0.201361))
 
         # Predicted etcd latency P99 at 100k objects (seconds)
         - record: crossplane:predicted_etcd_latency_p99_seconds:at_100k
           labels:
             model: "power_law"
             reference_objects: "100000"
-          expr: vector(8.138691113e-04 * (100000 ^ 0.544690))
+          expr: vector(6.570291e-01 * (100000 ^ -0.201361))
 
         # Predicted API server latency P99 at 50k objects (seconds)
         - record: crossplane:predicted_apiserver_latency_p99_seconds:at_50k
           labels:
             model: "power_law"
             reference_objects: "50000"
-          expr: vector(7.494035261e-03 * (50000 ^ 0.542813))
+          expr: vector(1.032016e+00 * (50000 ^ -0.004637))
 
         # Predicted API server latency P99 at 100k objects (seconds)
         - record: crossplane:predicted_apiserver_latency_p99_seconds:at_100k
           labels:
             model: "power_law"
             reference_objects: "100000"
-          expr: vector(7.494035261e-03 * (100000 ^ 0.542813))
+          expr: vector(1.032016e+00 * (100000 ^ -0.004637))
 
         # Predicted CPU at 50k objects (cores)
         - record: crossplane:predicted_cpu_cores:at_50k
           labels:
             model: "power_law"
             reference_objects: "50000"
-          expr: vector(2.409721870e-03 * (50000 ^ 0.589598))
+          expr: vector(3.290412e-03 * (50000 ^ 0.594721))
 
         # Predicted CPU at 100k objects (cores)
         - record: crossplane:predicted_cpu_cores:at_100k
           labels:
             model: "power_law"
             reference_objects: "100000"
-          expr: vector(2.409721870e-03 * (100000 ^ 0.589598))
+          expr: vector(3.290412e-03 * (100000 ^ 0.594721))
 
     # =====================================================================
     # Alerting Rules — Symptom Alerts (Page)
@@ -194,14 +194,14 @@ spec:
       rules:
         # --- Memory ---
         - alert: CrossplaneControllerMemoryCritical
-          expr: crossplane:controller_memory_bytes > 4294967296
+          expr: crossplane:controller_memory_bytes > 5368709120
           for: 5m
           labels:
             severity: critical
             team: platform
             alert_class: symptom
           annotations:
-            summary: "Crossplane controller memory exceeds 4 GiB"
+            summary: "Crossplane controller memory exceeds 5 GiB"
             description: |
               Controller memory: {{ $value | humanize1024 }}B.
               Immediate action required — approaching OOMKill at 6 GiB.
@@ -273,26 +273,26 @@ spec:
 
         # --- Object Count Thresholds ---
         - alert: CrossplaneObjectCountWarning
-          expr: crossplane:etcd_object_count:total > 30000
+          expr: crossplane:etcd_object_count:total > 50000
           for: 5m
           labels:
             severity: warning
             team: platform
             alert_class: symptom
           annotations:
-            summary: "etcd object count exceeds 30,000"
-            description: "Current object count: {{ $value | humanize }}. Monitor API latency for degradation."
+            summary: "etcd object count exceeds 50,000"
+            description: "Current object count: {{ $value | humanize }}. Monitor resource usage."
 
         - alert: CrossplaneObjectCountCritical
-          expr: crossplane:etcd_object_count:total > 80000
+          expr: crossplane:etcd_object_count:total > 100000
           for: 5m
           labels:
             severity: critical
             team: platform
             alert_class: symptom
           annotations:
-            summary: "etcd object count exceeds 80,000"
-            description: "Current object count: {{ $value | humanize }}. etcd may be approaching capacity limits."
+            summary: "etcd object count exceeds 100,000"
+            description: "Current object count: {{ $value | humanize }}. Approaching tested capacity limits."
 
         # --- Rapid Object Growth ---
         - alert: CrossplaneRapidObjectGrowth
@@ -316,32 +316,32 @@ spec:
     - name: crossplane-capacity.forecast-alerts
       rules:
         # --- Object Count Forecasts ---
-        - alert: CrossplaneObjectCount30kIn14Days
-          expr: crossplane:days_until_object_limit:30k > 0 and crossplane:days_until_object_limit:30k < 14
+        - alert: CrossplaneObjectCount50kIn14Days
+          expr: crossplane:days_until_object_limit:50k > 0 and crossplane:days_until_object_limit:50k < 14
           for: 30m
           labels:
             severity: warning
             team: platform
             alert_class: forecast
           annotations:
-            summary: "Projected to exceed 30k etcd objects within 14 days"
+            summary: "Projected to exceed 50k etcd objects within 14 days"
             description: |
               Current object count: {{ with query "crossplane:etcd_object_count:total" }}{{ . | first | value }}{{ end }}.
               Growth rate: {{ with query "crossplane:object_growth_rate:per_day" }}{{ . | first | value | humanize }}{{ end }} objects/day.
               Days remaining: {{ $value | humanize }}.
             runbook_url: "https://wiki.internal/runbooks/crossplane-capacity"
 
-        - alert: CrossplaneObjectCount30kIn3Days
-          expr: crossplane:days_until_object_limit:30k > 0 and crossplane:days_until_object_limit:30k < 3
+        - alert: CrossplaneObjectCount50kIn3Days
+          expr: crossplane:days_until_object_limit:50k > 0 and crossplane:days_until_object_limit:50k < 3
           for: 15m
           labels:
             severity: critical
             team: platform
             alert_class: forecast
           annotations:
-            summary: "Projected to exceed 30k etcd objects within 3 days"
+            summary: "Projected to exceed 50k etcd objects within 3 days"
             description: |
-              Only {{ $value | humanize }} days until 30k object threshold.
+              Only {{ $value | humanize }} days until 50k object threshold.
               Immediate scaling action may be required.
 
         - alert: CrossplaneObjectCount100kIn14Days
@@ -362,28 +362,28 @@ spec:
           expr: |
             crossplane:predicted_memory_bytes
               * (1 + clamp_min(crossplane:object_growth_rate:per_day, 0) * 14 / clamp_min(crossplane:etcd_object_count:total, 1))
-            > 4294967296
+            > 5368709120
           for: 30m
           labels:
             severity: warning
             team: platform
             alert_class: forecast
           annotations:
-            summary: "Predicted memory breach (4 GiB) within 14 days at current growth rate"
+            summary: "Predicted memory breach (5 GiB) within 14 days at current growth rate"
             description: "Plan capacity increase for Crossplane controllers."
 
         - alert: CrossplaneMemoryBreach30Days
           expr: |
             crossplane:predicted_memory_bytes
               * (1 + clamp_min(crossplane:object_growth_rate:per_day, 0) * 30 / clamp_min(crossplane:etcd_object_count:total, 1))
-            > 4294967296
+            > 5368709120
           for: 1h
           labels:
             severity: info
             team: platform
             alert_class: forecast
           annotations:
-            summary: "Predicted memory breach (4 GiB) within 30 days at current growth rate"
+            summary: "Predicted memory breach (5 GiB) within 30 days at current growth rate"
             description: "Add to sprint planning for capacity increase."
 
         # --- etcd Latency Forecast ---

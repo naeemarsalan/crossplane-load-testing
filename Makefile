@@ -1,10 +1,13 @@
-.PHONY: setup test-small test-full monitor analyze clean all help
+.PHONY: setup test-small test-full monitor analyze clean all help \
+       deploy-self-managed monitor-self-managed clean-self-managed status-self-managed \
+       refit-models update-coefficients deploy-prom-config \
+       etcd-baseline etcd-tune etcd-verify etcd-defrag etcd-status compare-results
 
 SHELL := /bin/bash
 PROJECT_DIR := $(shell pwd)
 KUBE_BURNER := kube-burner
 KUBE_BURNER_OCP := kube-burner-ocp
-REMOTE_PROM_URL := http://172.16.2.252:9090
+REMOTE_PROM_URL ?= http://prometheus.example.com:9090
 PROMETHEUS_URL ?= $(shell kubectl get route -n openshift-monitoring thanos-querier -o jsonpath='{.spec.host}' 2>/dev/null || echo "")
 PROMETHEUS_TOKEN ?= $(shell kubectl create token prometheus-k8s -n openshift-monitoring 2>/dev/null || echo "")
 METRICS_DIR := $(PROJECT_DIR)/kube-burner/collected-metrics
@@ -170,3 +173,108 @@ all: setup monitor test-full analyze ## Full pipeline: setup → monitor → tes
 	@echo ""
 	@echo "=== Full pipeline complete ==="
 	@echo "Report: $(REPORT_DIR)/capacity-report.md"
+
+# ─── Self-Managed (crossplane1) ─────────────────────────────────────
+
+PROM_HOST ?= prometheus.example.com
+PROM_CONFIG_DIR := /home/fedora/awesome-compose/prometheus-grafana/prometheus
+
+deploy-self-managed: ## Run full overnight pipeline on self-managed cluster
+	@echo "=== Deploying overnight test on self-managed cluster ==="
+	@if [ ! -f scripts/self-managed-env.sh ]; then \
+		echo "ERROR: scripts/self-managed-env.sh not found."; \
+		echo "Copy from template and fill in credentials:"; \
+		echo "  cp scripts/self-managed-env.sh.example scripts/self-managed-env.sh"; \
+		exit 1; \
+	fi
+	@mkdir -p results
+	bash scripts/deploy-self-managed.sh
+
+monitor-self-managed: ## Apply just the monitoring configs on self-managed cluster
+	@echo "=== Deploying monitoring on self-managed cluster ==="
+	@if [ -f scripts/self-managed-env.sh ]; then \
+		source scripts/self-managed-env.sh && \
+		oc login --username="$$CLUSTER_USERNAME" --password="$$CLUSTER_PASSWORD" --server="$$CLUSTER_API_URL" --insecure-skip-tls-verify=true; \
+	fi
+	kubectl apply -f monitoring/self-managed/cluster-monitoring-config.yaml
+	kubectl apply -f monitoring/self-managed/user-workload-monitoring-config.yaml
+	kubectl apply -f monitoring/prometheus-rules.yaml
+	@echo ""
+	@echo "Monitoring configs applied. Waiting for user-workload-monitoring pods..."
+	kubectl wait --for=condition=Ready pod -l app.kubernetes.io/name=prometheus -n openshift-user-workload-monitoring --timeout=300s 2>/dev/null || true
+	@echo "Done."
+
+clean-self-managed: ## Clean test resources on self-managed cluster
+	@echo "=== Cleaning overnight test resources on self-managed cluster ==="
+	@if [ -f scripts/self-managed-env.sh ]; then \
+		source scripts/self-managed-env.sh && \
+		oc login --username="$$CLUSTER_USERNAME" --password="$$CLUSTER_PASSWORD" --server="$$CLUSTER_API_URL" --insecure-skip-tls-verify=true; \
+	fi
+	-kubectl delete vmdeployments.capacity.crossplane.io --all -n crossplane-loadtest --timeout=120s 2>/dev/null
+	@echo "Waiting for NopResources to be garbage collected..."
+	@sleep 10
+	-kubectl delete nopresources.nop.crossplane.io --all -n crossplane-loadtest --timeout=120s 2>/dev/null
+	@echo "Cleanup complete."
+
+status-self-managed: ## Show overnight test status on self-managed cluster
+	@echo "=== Self-Managed Overnight Test Status ==="
+	@echo ""
+	@echo "--- Tracking Log (last 5 entries) ---"
+	@if [ -f results/overnight-log.json ]; then \
+		tail -5 results/overnight-log.json | python3 -m json.tool --no-ensure-ascii 2>/dev/null || tail -5 results/overnight-log.json; \
+	else \
+		echo "No tracking log yet (results/overnight-log.json)."; \
+	fi
+	@echo ""
+	@echo "--- External Prometheus (crossplane1 metrics) ---"
+	@curl -s "$(REMOTE_PROM_URL)/api/v1/query?query=crossplane:etcd_object_count:total{source_cluster=\"crossplane1\"}" 2>/dev/null \
+		| python3 -c "import sys,json; r=json.load(sys.stdin); d=r.get('data',{}).get('result',[]); print(f'  Object count: {d[0][\"value\"][1]}') if d else print('  No data yet.')" \
+		2>/dev/null || echo "  Cannot reach external Prometheus."
+	@curl -s "$(REMOTE_PROM_URL)/api/v1/query?query=crossplane:controller_memory_bytes{source_cluster=\"crossplane1\"}" 2>/dev/null \
+		| python3 -c "import sys,json; r=json.load(sys.stdin); d=r.get('data',{}).get('result',[]); v=float(d[0]['value'][1]) if d else 0; print(f'  Controller memory: {v/1e6:.1f} MB') if d else print('  No memory data yet.')" \
+		2>/dev/null || echo "  Cannot reach external Prometheus."
+	@curl -s "$(REMOTE_PROM_URL)/api/v1/query?query=crossplane:etcd_db_size_bytes{source_cluster=\"crossplane1\"}" 2>/dev/null \
+		| python3 -c "import sys,json; r=json.load(sys.stdin); d=r.get('data',{}).get('result',[]); v=float(d[0]['value'][1]) if d else 0; print(f'  etcd DB size: {v/1e6:.1f} MB') if d else print('  No etcd DB size data yet.')" \
+		2>/dev/null || echo "  Cannot reach external Prometheus."
+	@echo ""
+	@echo "--- Kill Switch ---"
+	@if [ -f scripts/.stop-test ]; then \
+		echo "  ACTIVE — test will stop after current batch"; \
+	else \
+		echo "  Not set (touch scripts/.stop-test to stop)"; \
+	fi
+
+refit-models: ## Refit capacity models from overnight data
+	python3 scripts/refit-models.py
+
+update-coefficients: ## Update model coefficients from refit output
+	python3 scripts/update-coefficients.py --apply
+
+deploy-prom-config: ## Deploy Prometheus config files to external Prometheus (PROM_HOST)
+	@echo "=== Deploying Prometheus config to $(PROM_HOST) ==="
+	scp monitoring/crossplane-rules-self-managed.yml fedora@$(PROM_HOST):$(PROM_CONFIG_DIR)/crossplane-rules-self-managed.yml
+	scp monitoring/prometheus-self-managed.yml fedora@$(PROM_HOST):$(PROM_CONFIG_DIR)/prometheus.yml
+	@echo "Reloading Prometheus..."
+	curl -s -X POST http://$(PROM_HOST):9090/-/reload || ssh fedora@$(PROM_HOST) 'docker kill --signal=SIGHUP $$(docker ps -q --filter name=prometheus)'
+	@echo ""
+	@echo "Config deployed. Verify at http://$(PROM_HOST):9090/config"
+
+# ─── etcd Tuning ────────────────────────────────────────────────────
+
+etcd-baseline: ## Capture baseline etcd config and metrics
+	bash scripts/etcd-tuning.sh baseline
+
+etcd-tune: ## Apply etcd tuning (compaction=1m, quota=8GiB, snapshot-count=25k)
+	bash scripts/etcd-tuning.sh tune
+
+etcd-verify: ## Verify etcd tuning was applied
+	bash scripts/etcd-tuning.sh verify
+
+etcd-defrag: ## Run etcd defragmentation on all members
+	bash scripts/etcd-tuning.sh defrag
+
+etcd-status: ## Show current etcd status
+	bash scripts/etcd-tuning.sh status
+
+compare-results: ## Compare baseline vs tuned overnight results
+	python3 scripts/compare-overnight-results.py

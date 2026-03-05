@@ -259,7 +259,7 @@ class TestConfidence:
 
     def test_extrapolation_lowers_confidence(self, standard_supply, thresholds):
         """Far beyond valid range should lower confidence."""
-        # Valid range is 6514-48035, querying at 200000
+        # Valid range is 18047-115856, querying at 200000
         result = forward_capacity(standard_supply, 200000, 0, DEFAULT_MODELS, thresholds)
         assert result.confidence == "low"
 

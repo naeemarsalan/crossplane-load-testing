@@ -1,5 +1,5 @@
 # Crossplane Capacity Planning — Prometheus Recording & Alert Rules
-# Deployed to external Prometheus (prom.arsalan.io) which receives metrics
+# Deployed to external Prometheus which receives metrics
 # from ROSA via remote-write. Source recording rules use unfiltered selectors
 # since this Prometheus ingests only one ROSA cluster.
 

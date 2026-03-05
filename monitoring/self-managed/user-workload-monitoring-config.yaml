@@ -7,6 +7,8 @@ data:
   config.yaml: |
     prometheus:
       retention: 24h
+      externalLabels:
+        source_cluster: crossplane1
       remoteWrite:
         - url: "https://prometheus.example.com/api/v1/write"
           writeRelabelConfigs:

@@ -1,0 +1,29 @@
+# External Prometheus configuration
+#
+# Receives data via remote-write from OpenShift clusters.
+# crossplane1 data arrives via remote-write (source_cluster=crossplane1 via externalLabels).
+# Recording rules in crossplane-rules-self-managed.yml.
+#
+global:
+  scrape_interval: 15s
+  scrape_timeout: 10s
+  evaluation_interval: 15s
+rule_files:
+  - "crossplane-rules-self-managed.yml"
+alerting:
+  alertmanagers:
+  - static_configs:
+    - targets: []
+    scheme: http
+    timeout: 10s
+    api_version: v2
+scrape_configs:
+- job_name: prometheus
+  honor_timestamps: true
+  scrape_interval: 15s
+  scrape_timeout: 10s
+  metrics_path: /metrics
+  scheme: http
+  static_configs:
+  - targets:
+    - localhost:9090

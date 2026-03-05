@@ -1,204 +1,154 @@
 # Capacity Model Scorecard
 
-**Generated**: 2026-02-28 16:31:29
+**Generated**: 2026-03-03 13:52:00
 
 ## Model Selection Summary
 
 | Metric | Model | Train R² | Holdout MAPE | Holdout RMSE | Holdout R² | Confidence | Valid Range |
 |--------|-------|----------|-------------|-------------|-----------|------------|-------------|
-| apiserverErrorRate | piecewise_linear | 0.2915 | — | — | — | low | 6,513 – 48,035 |
-| apiserverInflightRequests | log_linear | 0.1180 | — | — | — | low | 6,513 – 48,035 |
-| apiserverLatencyP50 | log_linear | 0.1445 | — | — | — | low | 6,513 – 48,035 |
-| apiserverLatencyP99 | log_linear | 0.6009 | — | — | — | low | 6,513 – 48,035 |
-| apiserverRequestRate | piecewise_linear | 0.4352 | — | — | — | low | 6,513 – 48,035 |
-| crossplaneCPU | piecewise_linear | 0.9255 | — | — | — | low | 6,513 – 48,035 |
-| crossplaneMemory | piecewise_linear | 0.9822 | — | — | — | low | 6,513 – 48,035 |
-| etcdLatencyP50 | piecewise_linear | 0.8440 | — | — | — | low | 6,513 – 48,035 |
-| etcdLatencyP99 | log_linear | 0.4149 | — | — | — | low | 6,513 – 48,035 |
+| api_p99 | linear | 0.3658 | 0.6% | 0.006114 | -396.6304 | low | 18,000 – 96,000 |
+| cpu | saturating_exp | 0.9807 | 3.1% | 0.121 | -2.4657 | low | 18,000 – 96,000 |
+| etcd_db_size | log_linear | 0.8961 | 15.2% | 5.422e+07 | -1.3792 | low | 18,000 – 104,000 |
+| etcd_p99 | piecewise_linear | 0.6381 | 16.0% | 0.007675 | -593.0033 | low | 18,000 – 96,000 |
+| memory | power_law | 0.9389 | 1.4% | 9.285e+07 | -0.2930 | low | 18,000 – 96,000 |
+| wal_fsync | power_law | 0.5071 | 18.6% | 0.001297 | 0.0151 | low | 18,000 – 104,000 |
 
 ## Per-Metric Details
 
-### apiserverErrorRate
+### api_p99
 
-- **Fit date**: 2026-02-28
+- **Fit date**: 2026-03-03
 - **Confidence**: low
-- **Valid range**: 6,513 – 48,035 objects
+- **Valid range**: 18,000 – 96,000 objects
 
-**Selected model**: piecewise_linear
-- Equation: `y = -9.090909e-03*x + 5.931136e+01 (x<=6524), -4.388551e-15*x + -1.247145e-10 (x>6524)`
-- Training R²: 0.2915
-- Residual std: 0.04095
+**Selected model**: linear
+- Equation: `y = -8.474116e-08 * x + 9.864594e-01`
+- Training R²: 0.3658
+- Residual std: 0.003111
 
 **All candidates evaluated**:
 
 | Model | Train R² | Holdout MAPE | Holdout RMSE |
 |-------|----------|-------------|-------------|
-| piecewise_linear | 0.2915 | — | — |
-| log_linear | 0.0798 | — | — |
-| linear | 0.0481 | — | — |
+| piecewise_linear | 0.5810 | 1.0% | 0.009801 |
+| power_law | 0.4779 | 0.7% | 0.00669 |
+| log_linear | 0.4774 | 0.7% | 0.006689 |
+| sqrt | 0.4215 | 0.7% | 0.006389 |
+| linear | 0.3658 | 0.6% | 0.006114 |
+| saturating_exp | 0.0000 | 1.0% | 0.009758 |
 
-### apiserverInflightRequests
+### cpu
 
-- **Fit date**: 2026-02-28
+- **Fit date**: 2026-03-03
 - **Confidence**: low
-- **Valid range**: 6,513 – 48,035 objects
+- **Valid range**: 18,000 – 96,000 objects
+
+**Selected model**: saturating_exp
+- Equation: `y = 3.941337e+00 * (1 - e^(-3.492491e-05*x)) + -9.581304e-01`
+- Training R²: 0.9807
+- Residual std: 0.1001
+
+**All candidates evaluated**:
+
+| Model | Train R² | Holdout MAPE | Holdout RMSE |
+|-------|----------|-------------|-------------|
+| saturating_exp | 0.9807 | 3.1% | 0.121 |
+| log_linear | 0.9771 | 3.4% | 0.1295 |
+| piecewise_linear | 0.9712 | 3.6% | 0.1327 |
+| sqrt | 0.9501 | 7.1% | 0.2382 |
+| power_law | 0.9425 | 7.2% | 0.2421 |
+| linear | 0.9094 | 11.4% | 0.3639 |
+
+### etcd_db_size
+
+- **Fit date**: 2026-03-03
+- **Confidence**: low
+- **Valid range**: 18,000 – 104,000 objects
 
 **Selected model**: log_linear
-- Equation: `y = 3.702490e+01 * ln(x) + -3.047945e+02`
-- Training R²: 0.1180
-- Residual std: 66.86
+- Equation: `y = 1.737650e+08 * ln(x) + -1.637314e+09`
+- Training R²: 0.8961
+- Residual std: 2.659e+07
 
 **All candidates evaluated**:
 
 | Model | Train R² | Holdout MAPE | Holdout RMSE |
 |-------|----------|-------------|-------------|
-| log_linear | 0.1180 | — | — |
-| power_law | 0.0930 | — | — |
-| piecewise_linear | 0.0773 | — | — |
-| linear | 0.0749 | — | — |
+| piecewise_linear | 0.9368 | 20.6% | 7.921e+07 |
+| saturating_exp | 0.9315 | 20.2% | 7.775e+07 |
+| power_law | 0.9302 | 21.4% | 8.157e+07 |
+| linear | 0.9285 | 23.6% | 8.83e+07 |
+| sqrt | 0.9251 | 18.1% | 7.006e+07 |
+| log_linear | 0.8961 | 15.2% | 5.422e+07 |
 
-### apiserverLatencyP50
+### etcd_p99
 
-- **Fit date**: 2026-02-28
+- **Fit date**: 2026-03-03
 - **Confidence**: low
-- **Valid range**: 6,513 – 48,035 objects
-
-**Selected model**: log_linear
-- Equation: `y = 1.758197e-01 * ln(x) + -1.493390e+00`
-- Training R²: 0.1445
-- Residual std: 0.2826
-
-**All candidates evaluated**:
-
-| Model | Train R² | Holdout MAPE | Holdout RMSE |
-|-------|----------|-------------|-------------|
-| piecewise_linear | 0.7222 | — | — |
-| log_linear | 0.1445 | — | — |
-| power_law | 0.0983 | — | — |
-| linear | 0.0627 | — | — |
-
-### apiserverLatencyP99
-
-- **Fit date**: 2026-02-28
-- **Confidence**: low
-- **Valid range**: 6,513 – 48,035 objects
-
-**Selected model**: log_linear
-- Equation: `y = 1.010954e+00 * ln(x) + -8.310636e+00`
-- Training R²: 0.6009
-- Residual std: 0.5443
-
-**All candidates evaluated**:
-
-| Model | Train R² | Holdout MAPE | Holdout RMSE |
-|-------|----------|-------------|-------------|
-| piecewise_linear | 0.8297 | — | — |
-| log_linear | 0.6009 | — | — |
-| power_law | 0.5184 | — | — |
-| linear | 0.4453 | — | — |
-
-### apiserverRequestRate
-
-- **Fit date**: 2026-02-28
-- **Confidence**: low
-- **Valid range**: 6,513 – 48,035 objects
+- **Valid range**: 18,000 – 96,000 objects
 
 **Selected model**: piecewise_linear
-- Equation: `y = 1.553926e-02*x + -1.918795e+01 (x<=16208), -2.099710e-03*x + 2.667044e+02 (x>16208)`
-- Training R²: 0.4352
-- Residual std: 55.63
+- Equation: `y = -2.948389e-07*x + 9.347026e-02 (x<=76000), -5.601497e-07*x + 1.136339e-01 (x>76000)`
+- Training R²: 0.6381
+- Residual std: 0.00731
 
 **All candidates evaluated**:
 
 | Model | Train R² | Holdout MAPE | Holdout RMSE |
 |-------|----------|-------------|-------------|
-| piecewise_linear | 0.4352 | — | — |
-| log_linear | 0.1745 | — | — |
-| power_law | 0.1489 | — | — |
-| linear | 0.0825 | — | — |
+| piecewise_linear | 0.6381 | 16.0% | 0.007675 |
+| linear | 0.6270 | 24.8% | 0.01177 |
+| sqrt | 0.6158 | 29.5% | 0.01396 |
+| log_linear | 0.5967 | 33.8% | 0.01597 |
+| power_law | 0.5872 | 35.5% | 0.01679 |
+| saturating_exp | -0.0000 | 56.4% | 0.02667 |
 
-### crossplaneCPU
+### memory
 
-- **Fit date**: 2026-02-28
+- **Fit date**: 2026-03-03
 - **Confidence**: low
-- **Valid range**: 6,513 – 48,035 objects
+- **Valid range**: 18,000 – 96,000 objects
 
-**Selected model**: piecewise_linear
-- Equation: `y = 8.765912e-05*x + -4.105265e-01 (x<=15827), 8.712951e-06*x + 8.389544e-01 (x>15827)`
-- Training R²: 0.9255
-- Residual std: 0.1054
+**Selected model**: power_law
+- Equation: `y = 2.739965e+07 * x^0.4756`
+- Training R²: 0.9389
+- Residual std: 3.258e+08
 
 **All candidates evaluated**:
 
 | Model | Train R² | Holdout MAPE | Holdout RMSE |
 |-------|----------|-------------|-------------|
-| piecewise_linear | 0.9255 | — | — |
-| log_linear | 0.8516 | — | — |
-| power_law | 0.7608 | — | — |
-| linear | 0.6977 | — | — |
+| saturating_exp | 0.9625 | 6.0% | 3.996e+08 |
+| log_linear | 0.9623 | 1.5% | 1.01e+08 |
+| piecewise_linear | 0.9505 | 1.8% | 1.169e+08 |
+| power_law | 0.9389 | 1.4% | 9.285e+07 |
+| sqrt | 0.9371 | 2.4% | 1.615e+08 |
+| linear | 0.8999 | 5.5% | 3.695e+08 |
 
-### crossplaneMemory
+### wal_fsync
 
-- **Fit date**: 2026-02-28
+- **Fit date**: 2026-03-03
 - **Confidence**: low
-- **Valid range**: 6,513 – 48,035 objects
+- **Valid range**: 18,000 – 104,000 objects
 
-**Selected model**: piecewise_linear
-- Equation: `y = 1.056432e+05*x + -1.131568e+07 (x<=26361), 1.854968e+04*x + 2.284543e+09 (x>26361)`
-- Training R²: 0.9822
-- Residual std: 1.228e+08
-
-**All candidates evaluated**:
-
-| Model | Train R² | Holdout MAPE | Holdout RMSE |
-|-------|----------|-------------|-------------|
-| piecewise_linear | 0.9822 | — | — |
-| log_linear | 0.9816 | — | — |
-| power_law | 0.9335 | — | — |
-| linear | 0.8951 | — | — |
-
-### etcdLatencyP50
-
-- **Fit date**: 2026-02-28
-- **Confidence**: low
-- **Valid range**: 6,513 – 48,035 objects
-
-**Selected model**: piecewise_linear
-- Equation: `y = 8.980524e-07*x + -9.097797e-04 (x<=21370), -1.783597e-07*x + 2.209306e-02 (x>21370)`
-- Training R²: 0.8440
-- Residual std: 0.001831
+**Selected model**: power_law
+- Equation: `y = 3.114058e-01 * x^-0.3341`
+- Training R²: 0.5071
+- Residual std: 0.001344
 
 **All candidates evaluated**:
 
 | Model | Train R² | Holdout MAPE | Holdout RMSE |
 |-------|----------|-------------|-------------|
-| piecewise_linear | 0.8440 | — | — |
-| log_linear | 0.6050 | — | — |
-| power_law | 0.5230 | — | — |
-| linear | 0.3992 | — | — |
-
-### etcdLatencyP99
-
-- **Fit date**: 2026-02-28
-- **Confidence**: low
-- **Valid range**: 6,513 – 48,035 objects
-
-**Selected model**: log_linear
-- Equation: `y = 1.232885e-01 * ln(x) + -1.033989e+00`
-- Training R²: 0.4149
-- Residual std: 0.09671
-
-**All candidates evaluated**:
-
-| Model | Train R² | Holdout MAPE | Holdout RMSE |
-|-------|----------|-------------|-------------|
-| piecewise_linear | 0.7834 | — | — |
-| log_linear | 0.4149 | — | — |
-| power_law | 0.3278 | — | — |
-| linear | 0.2622 | — | — |
+| piecewise_linear | 0.6653 | — | — |
+| linear | 0.6342 | — | — |
+| sqrt | 0.5971 | 21.6% | 0.00151 |
+| log_linear | 0.5463 | 19.3% | 0.00135 |
+| power_law | 0.5071 | 18.6% | 0.001297 |
+| saturating_exp | 0.0000 | 21.6% | 0.001585 |
 
 ## Change Log
 
 | Date | Version | Change |
 |------|---------|--------|
-| 2026-02-28 | 1.0 | Initial model selection with holdout validation |
+| 2026-03-03 | 1.0 | Initial model selection with holdout validation |

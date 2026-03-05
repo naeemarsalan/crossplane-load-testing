@@ -8,7 +8,7 @@ data:
     enableUserWorkload: true
     prometheusK8s:
       remoteWrite:
-        - url: "https://prom.arsalan.io/api/v1/write"
+        - url: "https://prometheus.example.com/api/v1/write"
           writeRelabelConfigs:
             - sourceLabels: [__name__, namespace]
               regex: "container_memory_working_set_bytes;crossplane-system|container_cpu_usage_seconds_total;crossplane-system"

@@ -1,0 +1,138 @@
+---
+# Metrics profile for Crossplane capacity planning on self-managed OpenShift
+# Extends the ROSA profile with direct etcd metrics
+
+# --- Object Counts (primary capacity indicator) ---
+- query: sum(apiserver_storage_objects)
+  metricName: etcdObjectCountTotal
+  instant: true
+
+- query: sum by (resource) (apiserver_storage_objects)
+  metricName: apiserverStorageObjectsByResource
+  instant: true
+
+# --- etcd Request Latency (proxy metric — also available on ROSA) ---
+- query: histogram_quantile(0.99, sum(rate(etcd_request_duration_seconds_bucket[5m])) by (le, operation, type))
+  metricName: etcdRequestLatencyP99
+  instant: true
+
+- query: histogram_quantile(0.50, sum(rate(etcd_request_duration_seconds_bucket[5m])) by (le, operation, type))
+  metricName: etcdRequestLatencyP50
+  instant: true
+
+# --- API Server Latency ---
+- query: histogram_quantile(0.99, sum(rate(apiserver_request_duration_seconds_bucket{verb!~"WATCH|CONNECT"}[5m])) by (le, verb, resource))
+  metricName: apiserverRequestLatencyP99
+  instant: true
+
+- query: histogram_quantile(0.50, sum(rate(apiserver_request_duration_seconds_bucket{verb!~"WATCH|CONNECT"}[5m])) by (le, verb, resource))
+  metricName: apiserverRequestLatencyP50
+  instant: true
+
+# --- API Server Request Throughput ---
+- query: sum(rate(apiserver_request_duration_seconds_count{verb!~"WATCH|CONNECT"}[5m])) by (verb, resource)
+  metricName: apiserverRequestRate
+  instant: true
+
+- query: sum(rate(apiserver_request_total{code=~"5.."}[5m])) by (verb, resource)
+  metricName: apiserverErrorRate
+  instant: true
+
+# --- API Server Inflight Requests ---
+- query: sum(apiserver_current_inflight_requests) by (request_kind)
+  metricName: apiserverInflightRequests
+  instant: true
+
+# --- Crossplane Controller Resources ---
+- query: sum(container_memory_working_set_bytes{namespace="crossplane-system"}) by (pod, container)
+  metricName: crossplaneControllerMemory
+  instant: true
+
+- query: sum(rate(container_cpu_usage_seconds_total{namespace="crossplane-system"}[5m])) by (pod, container)
+  metricName: crossplaneControllerCPU
+  instant: true
+
+# --- Worker Node Resources ---
+- query: sum(node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes) by (instance)
+  metricName: nodeMemoryUsed
+  instant: true
+
+- query: sum(rate(node_cpu_seconds_total{mode!="idle"}[5m])) by (instance)
+  metricName: nodeCPUUsage
+  instant: true
+
+# --- Flow Control (API Priority & Fairness) ---
+- query: sum(apiserver_flowcontrol_current_executing_requests) by (priority_level, flow_schema)
+  metricName: flowControlExecutingRequests
+  instant: true
+
+- query: sum(apiserver_flowcontrol_request_wait_duration_seconds_count) by (priority_level)
+  metricName: flowControlWaitCount
+  instant: true
+
+# =====================================================================
+# Direct etcd Metrics (self-managed only — NOT available on ROSA)
+# =====================================================================
+
+# --- etcd Database Size ---
+- query: etcd_mvcc_db_total_size_in_bytes
+  metricName: etcdDatabaseSize
+  instant: true
+
+# --- etcd Total Keys ---
+- query: etcd_mvcc_keys_total
+  metricName: etcdKeysTotal
+  instant: true
+
+# --- etcd WAL Fsync P99 Latency ---
+- query: histogram_quantile(0.99, sum(rate(etcd_disk_wal_fsync_duration_seconds_bucket[5m])) by (le))
+  metricName: etcdWalFsyncP99
+  instant: true
+
+# --- etcd Backend Commit P99 Latency ---
+- query: histogram_quantile(0.99, sum(rate(etcd_disk_backend_commit_duration_seconds_bucket[5m])) by (le))
+  metricName: etcdBackendCommitP99
+  instant: true
+
+# --- etcd Leader Changes Rate ---
+- query: sum(rate(etcd_server_leader_changes_seen_total[1h]))
+  metricName: etcdLeaderChangesRate
+  instant: true
+
+# --- etcd Peer Round-Trip Time P99 ---
+- query: histogram_quantile(0.99, sum(rate(etcd_network_peer_round_trip_time_seconds_bucket[5m])) by (le))
+  metricName: etcdPeerRttP99
+  instant: true
+
+# --- etcd Proposals Committed Rate ---
+- query: sum(rate(etcd_server_proposals_committed_total[5m]))
+  metricName: etcdProposalsCommittedRate
+  instant: true
+
+# =====================================================================
+# Time Series (collected over job duration)
+# =====================================================================
+- query: sum(apiserver_storage_objects)
+  metricName: etcdObjectCountTimeSeries
+  instant: false
+
+- query: histogram_quantile(0.99, sum(rate(etcd_request_duration_seconds_bucket[2m])) by (le))
+  metricName: etcdRequestLatencyTimeSeries
+  instant: false
+
+- query: histogram_quantile(0.99, sum(rate(apiserver_request_duration_seconds_bucket{verb!~"WATCH|CONNECT"}[2m])) by (le))
+  metricName: apiserverLatencyTimeSeries
+  instant: false
+
+- query: sum(container_memory_working_set_bytes{namespace="crossplane-system"})
+  metricName: crossplaneMemoryTimeSeries
+  instant: false
+
+# Direct etcd time series (self-managed only)
+- query: max(etcd_mvcc_db_total_size_in_bytes)
+  metricName: etcdDatabaseSizeTimeSeries
+  instant: false
+
+- query: histogram_quantile(0.99, sum(rate(etcd_disk_wal_fsync_duration_seconds_bucket[2m])) by (le))
+  metricName: etcdWalFsyncTimeSeries
+  instant: false

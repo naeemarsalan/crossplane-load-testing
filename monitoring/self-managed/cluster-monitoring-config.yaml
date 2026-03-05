@@ -1,0 +1,36 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cluster-monitoring-config
+  namespace: openshift-monitoring
+data:
+  config.yaml: |
+    enableUserWorkload: true
+    prometheusK8s:
+      externalLabels:
+        source_cluster: crossplane1
+      remoteWrite:
+        # API server & etcd proxy metrics
+        - url: "https://prometheus.example.com/api/v1/write"
+          writeRelabelConfigs:
+            - sourceLabels: [__name__]
+              regex: "apiserver_storage_objects|etcd_request_duration_seconds_.+|apiserver_request_duration_seconds_.+|apiserver_current_inflight_requests|apiserver_request_total|apiserver_flowcontrol_.+"
+              action: keep
+        # Container metrics for crossplane-system
+        - url: "https://prometheus.example.com/api/v1/write"
+          writeRelabelConfigs:
+            - sourceLabels: [__name__, namespace]
+              regex: "container_memory_working_set_bytes;crossplane-system|container_cpu_usage_seconds_total;crossplane-system"
+              action: keep
+        # Node metrics
+        - url: "https://prometheus.example.com/api/v1/write"
+          writeRelabelConfigs:
+            - sourceLabels: [__name__]
+              regex: "node_memory_.+|node_cpu_seconds_total"
+              action: keep
+        # Direct etcd metrics (self-managed only — not available on ROSA)
+        - url: "https://prometheus.example.com/api/v1/write"
+          writeRelabelConfigs:
+            - sourceLabels: [__name__]
+              regex: "etcd_mvcc_db_total_size_in_bytes|etcd_mvcc_keys_total|etcd_disk_wal_fsync_duration_seconds_bucket|etcd_disk_backend_commit_duration_seconds_bucket|etcd_server_leader_changes_seen_total|etcd_server_proposals_committed_total|etcd_network_peer_round_trip_time_seconds_bucket"
+              action: keep

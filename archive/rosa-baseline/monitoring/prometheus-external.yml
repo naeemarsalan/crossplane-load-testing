@@ -1,4 +1,4 @@
-# External Prometheus configuration (172.16.2.252:9090)
+# External Prometheus configuration
 #
 # This Prometheus instance runs outside the ROSA cluster and pulls metrics
 # via federation from ROSA's public /federate endpoint. Recording rules and

@@ -9,7 +9,7 @@
 #   ./collect-soak-metrics.sh [PROMETHEUS_URL] [TEST_START_RFC3339]
 #
 # Example:
-#   ./collect-soak-metrics.sh https://prom.arsalan.io 2026-02-28T14:00:00Z
+#   ./collect-soak-metrics.sh https://prometheus.example.com 2026-02-28T14:00:00Z
 #
 # Output:
 #   collected-metrics-soak/soak-summary.json    — step-averaged data for analyze.py
@@ -17,7 +17,7 @@
 
 set -euo pipefail
 
-PROM_URL="${1:-https://prom.arsalan.io}"
+PROM_URL="${1:-${PROM_URL:-https://prometheus.example.com}}"
 TEST_START="${2:-}"
 OUTPUT_DIR="collected-metrics-soak"
 TS_DIR="${OUTPUT_DIR}/timeseries"

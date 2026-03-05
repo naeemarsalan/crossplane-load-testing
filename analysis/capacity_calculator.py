@@ -66,7 +66,7 @@ class ModelSet:
 @dataclass
 class ThresholdSet:
     """Thresholds for each capacity dimension."""
-    memory_critical: float = 4 * 1024**3       # 4 GB
+    memory_critical: float = 5 * 1024**3       # 5 GB
     memory_hard: float = 6 * 1024**3           # 6 GB
     etcd_p99_critical: float = 0.5             # 500ms
     etcd_p99_hard: float = 1.0                 # 1000ms
@@ -328,10 +328,10 @@ def make_power_law_model(a: float, b: float, r2: float = 0.0,
 
 # Pre-built models from crossplane-rules-external.yml coefficients
 DEFAULT_MODELS = ModelSet(
-    memory=make_power_law_model(2.410377201e+06, 0.675841, r2=0.9335, confidence="high", valid_range=(6514, 48035)),
-    cpu=make_power_law_model(2.409721870e-03, 0.589598, r2=0.7608, confidence="medium", valid_range=(6514, 48035)),
-    etcd_p99=make_power_law_model(8.138691113e-04, 0.544690, r2=0.3278, confidence="low", valid_range=(6514, 48035)),
-    api_p99=make_power_law_model(7.494035261e-03, 0.542813, r2=0.5184, confidence="low", valid_range=(6514, 48035)),
+    memory=make_power_law_model(2.739965e+07, 0.475558, r2=0.9389, confidence="high", valid_range=(18047, 115856)),
+    cpu=make_power_law_model(3.290412e-03, 0.594721, r2=0.9425, confidence="medium", valid_range=(18047, 115856)),
+    etcd_p99=make_power_law_model(6.570291e-01, -0.201361, r2=0.5872, confidence="low", valid_range=(18047, 115856)),
+    api_p99=make_power_law_model(1.032016e+00, -0.004637, r2=0.4779, confidence="low", valid_range=(18047, 115856)),
 )
 
 DEFAULT_THRESHOLDS = ThresholdSet()

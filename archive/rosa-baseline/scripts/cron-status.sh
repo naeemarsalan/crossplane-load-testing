@@ -6,7 +6,7 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
 STATE_FILE="$SCRIPT_DIR/cron-state.json"
 TRACKING_LOG="$PROJECT_DIR/results/cron-log.json"
-PROM_URL="https://prom.arsalan.io"
+PROM_URL="https://prometheus.example.com"
 
 query_prom_value() {
     local query="$1"

@@ -75,7 +75,6 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 1,
-  "id": 8,
   "links": [],
   "liveNow": false,
   "panels": [
@@ -228,7 +227,7 @@
             "type": "prometheus",
             "uid": "PBFA97CFB590B2093"
           },
-          "expr": "crossplane:capacity_status",
+          "expr": "crossplane:capacity_status{source_cluster=~\"$source_cluster\"}",
           "legendFormat": "Status",
           "refId": "A"
         }
@@ -302,7 +301,7 @@
             "type": "prometheus",
             "uid": "PBFA97CFB590B2093"
           },
-          "expr": "crossplane:etcd_object_count:total",
+          "expr": "crossplane:etcd_object_count:total{source_cluster=~\"$source_cluster\"}",
           "legendFormat": "Total Objects",
           "refId": "A"
         }
@@ -371,7 +370,7 @@
             "type": "prometheus",
             "uid": "PBFA97CFB590B2093"
           },
-          "expr": "crossplane:controller_memory_bytes",
+          "expr": "crossplane:controller_memory_bytes{source_cluster=~\"$source_cluster\"}",
           "legendFormat": "Memory",
           "refId": "A"
         }
@@ -440,7 +439,7 @@
             "type": "prometheus",
             "uid": "PBFA97CFB590B2093"
           },
-          "expr": "crossplane:etcd_request_latency:p99 * 1000",
+          "expr": "crossplane:etcd_request_latency:p99{source_cluster=~\"$source_cluster\"} * 1000",
           "legendFormat": "etcd P99",
           "refId": "A"
         }
@@ -509,7 +508,7 @@
             "type": "prometheus",
             "uid": "PBFA97CFB590B2093"
           },
-          "expr": "crossplane:apiserver_request_latency:p99 * 1000",
+          "expr": "crossplane:apiserver_request_latency:p99{source_cluster=~\"$source_cluster\"} * 1000",
           "legendFormat": "API P99",
           "refId": "A"
         }
@@ -689,7 +688,7 @@
             "type": "prometheus",
             "uid": "PBFA97CFB590B2093"
           },
-          "expr": "crossplane:etcd_object_count:total",
+          "expr": "crossplane:etcd_object_count:total{source_cluster=~\"$source_cluster\"}",
           "legendFormat": "Current",
           "refId": "A"
         },
@@ -698,7 +697,7 @@
             "type": "prometheus",
             "uid": "PBFA97CFB590B2093"
           },
-          "expr": "predict_linear(crossplane:etcd_object_count:total[6h:1m], 7*86400)",
+          "expr": "predict_linear(crossplane:etcd_object_count:total{source_cluster=~\"$source_cluster\"}[6h:1m], 7*86400)",
           "legendFormat": "7-day Projection",
           "refId": "B"
         },
@@ -707,7 +706,7 @@
             "type": "prometheus",
             "uid": "PBFA97CFB590B2093"
           },
-          "expr": "predict_linear(crossplane:etcd_object_count:total[6h:1m], 30*86400)",
+          "expr": "predict_linear(crossplane:etcd_object_count:total{source_cluster=~\"$source_cluster\"}[6h:1m], 30*86400)",
           "legendFormat": "30-day Projection",
           "refId": "C"
         }
@@ -807,7 +806,7 @@
             "type": "prometheus",
             "uid": "PBFA97CFB590B2093"
           },
-          "expr": "crossplane:days_until_object_limit:30k",
+          "expr": "crossplane:days_until_object_limit:30k{source_cluster=~\"$source_cluster\"}",
           "legendFormat": "Days to 30k",
           "refId": "A"
         }
@@ -907,7 +906,7 @@
             "type": "prometheus",
             "uid": "PBFA97CFB590B2093"
           },
-          "expr": "crossplane:days_until_object_limit:100k",
+          "expr": "crossplane:days_until_object_limit:100k{source_cluster=~\"$source_cluster\"}",
           "legendFormat": "Days to 100k",
           "refId": "A"
         }
@@ -1007,7 +1006,7 @@
             "type": "prometheus",
             "uid": "PBFA97CFB590B2093"
           },
-          "expr": "crossplane:days_until_memory_breach",
+          "expr": "crossplane:days_until_memory_breach{source_cluster=~\"$source_cluster\"}",
           "legendFormat": "Days to Memory Breach",
           "refId": "A"
         }
@@ -1107,7 +1106,7 @@
             "type": "prometheus",
             "uid": "PBFA97CFB590B2093"
           },
-          "expr": "crossplane:days_until_api_latency_breach",
+          "expr": "crossplane:days_until_api_latency_breach{source_cluster=~\"$source_cluster\"}",
           "legendFormat": "Days to API Breach",
           "refId": "A"
         }
@@ -2908,7 +2907,7 @@
             "type": "prometheus",
             "uid": "PBFA97CFB590B2093"
           },
-          "expr": "crossplane:nodes_required:now",
+          "expr": "crossplane:nodes_required:now{source_cluster=~\"$source_cluster\"}",
           "legendFormat": "Workers Now",
           "refId": "A"
         }
@@ -2973,7 +2972,7 @@
             "type": "prometheus",
             "uid": "PBFA97CFB590B2093"
           },
-          "expr": "crossplane:nodes_required:14d",
+          "expr": "crossplane:nodes_required:14d{source_cluster=~\"$source_cluster\"}",
           "legendFormat": "Workers 14d",
           "refId": "A"
         }
@@ -3038,7 +3037,7 @@
             "type": "prometheus",
             "uid": "PBFA97CFB590B2093"
           },
-          "expr": "crossplane:nodes_required:30d",
+          "expr": "crossplane:nodes_required:30d{source_cluster=~\"$source_cluster\"}",
           "legendFormat": "Workers 30d",
           "refId": "A"
         }
@@ -3104,7 +3103,7 @@
             "type": "prometheus",
             "uid": "PBFA97CFB590B2093"
           },
-          "expr": "crossplane:max_objects_supported",
+          "expr": "crossplane:max_objects_supported{source_cluster=~\"$source_cluster\"}",
           "legendFormat": "Max Objects",
           "refId": "A"
         }
@@ -3170,7 +3169,7 @@
             "type": "prometheus",
             "uid": "PBFA97CFB590B2093"
           },
-          "expr": "crossplane:max_claims_supported",
+          "expr": "crossplane:max_claims_supported{source_cluster=~\"$source_cluster\"}",
           "legendFormat": "Max Claims",
           "refId": "A"
         }
@@ -3250,7 +3249,7 @@
             "type": "prometheus",
             "uid": "PBFA97CFB590B2093"
           },
-          "expr": "crossplane:capacity_bottleneck_code",
+          "expr": "crossplane:capacity_bottleneck_code{source_cluster=~\"$source_cluster\"}",
           "legendFormat": "Bottleneck",
           "refId": "A"
         }
@@ -4812,6 +4811,31 @@
         "regex": "",
         "skipUrlSync": false,
         "type": "datasource"
+      },
+      {
+        "allValue": ".*",
+        "current": {
+          "selected": true,
+          "text": "All",
+          "value": "$__all"
+        },
+        "definition": "label_values(crossplane:etcd_object_count:total, source_cluster)",
+        "hide": 0,
+        "includeAll": true,
+        "label": "Cluster",
+        "multi": false,
+        "name": "source_cluster",
+        "options": [],
+        "query": {
+          "qryType": 1,
+          "query": "label_values(crossplane:etcd_object_count:total, source_cluster)",
+          "refId": "StandardVariableQuery"
+        },
+        "refresh": 2,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 1,
+        "type": "query"
       }
     ]
   },
